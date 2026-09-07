@@ -53,6 +53,7 @@ const modelLoadMs = ref(null)
 const modelStatus = ref('idle')
 const engineStatus = ref('idle')
 const isCleaningUp = ref(false)
+const roverScale = ref(1)
 const debugEnabled = computed(() => route.query.debug === '1')
 const trackingIsLimited = computed(() => trackingStatus.value === 'LIMITED')
 
@@ -61,6 +62,10 @@ let pipeline = null
 let unsubscribeTracking = null
 let animationFrame = null
 let cleanupPromise = null
+const activePointers = new Map()
+let pinchStartDistance = null
+let pinchStartScale = 1
+let suppressTap = false
 
 const permissionErrorCodes = new Set(['NotAllowedError', 'PermissionDeniedError', 'CAMERA_FAILED'])
 
@@ -142,6 +147,38 @@ const handleCanvasPointer = (event) => {
   }
 
   if (store.canCollect) pipeline?.collectAtScreen(event.clientX, event.clientY)
+}
+
+const pointerDistance = () => {
+  const [first, second] = [...activePointers.values()]
+  return first && second ? Math.hypot(first.x - second.x, first.y - second.y) : 0
+}
+
+const handlePointerDown = (event) => {
+  activePointers.set(event.pointerId, {x: event.clientX, y: event.clientY})
+  canvas.value?.setPointerCapture?.(event.pointerId)
+  if (activePointers.size === 2 && phase.value === GAME_PHASES.PLAYING) {
+    pinchStartDistance = pointerDistance()
+    pinchStartScale = pipeline?.getRoverScale() || 1
+    suppressTap = true
+  }
+}
+
+const handlePointerMove = (event) => {
+  if (!activePointers.has(event.pointerId)) return
+  activePointers.set(event.pointerId, {x: event.clientX, y: event.clientY})
+  if (activePointers.size !== 2 || !pinchStartDistance) return
+
+  const nextScale = pinchStartScale * (pointerDistance() / pinchStartDistance)
+  roverScale.value = pipeline?.setRoverScale(nextScale) || roverScale.value
+}
+
+const handlePointerUp = (event) => {
+  const isSingleTap = activePointers.size === 1 && !suppressTap
+  activePointers.delete(event.pointerId)
+  if (activePointers.size < 2) pinchStartDistance = null
+  if (isSingleTap) handleCanvasPointer(event)
+  if (activePointers.size === 0) suppressTap = false
 }
 
 const replay = () => {
@@ -228,7 +265,10 @@ onBeforeUnmount(() => {
       ref="canvas"
       class="ar-canvas"
       aria-label="WebAR 空間尋寶相機畫面"
-      @pointerup="handleCanvasPointer"
+      @pointerdown="handlePointerDown"
+      @pointermove="handlePointerMove"
+      @pointerup="handlePointerUp"
+      @pointercancel="handlePointerUp"
     />
 
     <div class="interface-layer">
@@ -312,6 +352,9 @@ onBeforeUnmount(() => {
           <LocateFixed :size="17" aria-hidden="true" />
           重新定位
         </button>
+        <div v-if="phase === GAME_PHASES.PLAYING" class="gesture-hint">
+          雙指縮放車子 · {{ Math.round(roverScale * 100) }}%
+        </div>
       </template>
 
       <section v-if="phase === GAME_PHASES.PAUSED" class="status-overlay" aria-live="assertive">
@@ -533,6 +576,7 @@ a { pointer-events: auto; }
 .progress-track { height: .25rem; overflow: hidden; border-radius: 99px; background: #ffffff14; }
 .progress-track span { display: block; height: 100%; border-radius: inherit; background: #79f59f; box-shadow: 0 0 12px #79f59f; transition: width .25s ease; }
 .relocate-button { position: absolute; right: 1rem; bottom: calc(env(safe-area-inset-bottom) + 1rem); display: flex; min-height: 44px; align-items: center; gap: .45rem; padding: 0 .85rem; border: 1px solid #ffffff24; border-radius: .7rem; color: #d8e7de; background: #06100bd9; font-size: .78rem; font-weight: 750; backdrop-filter: blur(12px); }
+.gesture-hint { position: absolute; bottom: calc(env(safe-area-inset-bottom) + 1.15rem); left: 1rem; padding: .55rem .7rem; border: 1px solid #ffffff1a; border-radius: .65rem; color: #b8c9bf; background: #06100bd9; font-size: .68rem; backdrop-filter: blur(12px); }
 
 .status-overlay { position: absolute; inset: 0; display: grid; place-items: center; padding: 1rem; background: #010604a6; pointer-events: auto; }
 .status-card { width: min(100%, 27rem); padding: 1.5rem; border-radius: 1.4rem; text-align: center; }

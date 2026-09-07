@@ -99,6 +99,7 @@ export const createSpatialHuntPipeline = ({
   let hitMeshes = []
   let disposed = false
   let roundActive = false
+  let roverScale = 1
   let frameCount = 0
   let fpsWindowStartedAt = 0
 
@@ -326,6 +327,16 @@ export const createSpatialHuntPipeline = ({
       return true
     },
 
+    setRoverScale(scale) {
+      roverScale = THREE.MathUtils.clamp(Number(scale) || 1, 0.55, 1.8)
+      roverContainer?.scale.setScalar(roverScale)
+      return roverScale
+    },
+
+    getRoverScale() {
+      return roverScale
+    },
+
     collectAtScreen(clientX, clientY) {
       if (!roundActive || !scene || !camera || !renderer || disposed) return false
       setPointerFromScreen(clientX, clientY)
@@ -348,4 +359,3 @@ export const createSpatialHuntPipeline = ({
     dispose,
   }
 }
-

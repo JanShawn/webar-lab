@@ -119,7 +119,7 @@ export const useSpatialHuntStore = defineStore('spatialHunt', {
       this.elapsedMs = 0
       this.lastTickAt = null
       this.pauseReasons = []
-      this.phase = GAME_PHASES.COACHING
+      this.phase = GAME_PHASES.PLACING
     },
 
     fail(code, message) {
@@ -133,4 +133,3 @@ export const useSpatialHuntStore = defineStore('spatialHunt', {
     },
   },
 })
-

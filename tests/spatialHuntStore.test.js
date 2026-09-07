@@ -54,4 +54,15 @@ describe('spatial hunt store', () => {
     expect(store.bestTimeMs).toBe(500)
     expect(storage.getItem(BEST_TIME_KEY)).toBe('500')
   })
+
+  it('returns directly to placement when relocating the rover', () => {
+    const store = useSpatialHuntStore()
+    store.beginRound(0)
+    store.collect('crystal-1', 100)
+    store.relocate()
+
+    expect(store.phase).toBe(GAME_PHASES.PLACING)
+    expect(store.collectedCount).toBe(0)
+    expect(store.elapsedMs).toBe(0)
+  })
 })
