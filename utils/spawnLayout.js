@@ -1,8 +1,10 @@
-export const TARGET_COUNT = 5
-export const MIN_RADIUS = 0.8
-export const MAX_RADIUS = 1.5
-export const MIN_HEIGHT = 0.25
-export const MAX_HEIGHT = 1.1
+import {spatialHuntConfig} from '~/experiences/spatial-hunt/config'
+
+export const TARGET_COUNT = spatialHuntConfig.targetCount
+export const MIN_RADIUS = spatialHuntConfig.spawn.minRadiusMeters
+export const MAX_RADIUS = spatialHuntConfig.spawn.maxRadiusMeters
+export const MIN_HEIGHT = spatialHuntConfig.spawn.minHeightMeters
+export const MAX_HEIGHT = spatialHuntConfig.spawn.maxHeightMeters
 export const MIN_RADIUS_METERS = MIN_RADIUS
 export const MAX_RADIUS_METERS = MAX_RADIUS
 export const MIN_HEIGHT_METERS = MIN_HEIGHT
@@ -30,7 +32,11 @@ const createRandom = (seed) => {
 export const generateSpawnLayout = (seed = Date.now()) => {
   const random = createRandom(seed)
   // 五個安全槽位均勻鋪在玩家前方 240°，再加入少量角度 jitter 避免每局完全相同。
-  const angles = [-120, -60, 0, 60, 120]
+  const angleStep = spatialHuntConfig.spawn.arcDegrees / Math.max(1, TARGET_COUNT - 1)
+  const angles = Array.from(
+    {length: TARGET_COUNT},
+    (_, index) => -spatialHuntConfig.spawn.arcDegrees / 2 + angleStep * index,
+  )
 
   return angles.map((angle, index) => {
     const angleWithJitter = angle + (random() - 0.5) * 10

@@ -1,4 +1,5 @@
 import {defineStore} from 'pinia'
+import {spatialHuntConfig} from '~/experiences/spatial-hunt/config'
 import {readBestTime, writeBestTime} from '~/utils/time'
 
 export const GAME_PHASES = Object.freeze({
@@ -17,7 +18,7 @@ export const useSpatialHuntStore = defineStore('spatialHunt', {
   state: () => ({
     phase: GAME_PHASES.INTRO,
     collectedIds: [],
-    targetCount: 5,
+    targetCount: spatialHuntConfig.targetCount,
     elapsedMs: 0,
     bestTimeMs: null,
     lastTickAt: null,

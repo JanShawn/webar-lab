@@ -1,8 +1,9 @@
 import * as THREE from 'three'
 import {GLTFLoader} from 'three/addons/loaders/GLTFLoader.js'
 import {MeshoptDecoder} from 'three/addons/libs/meshopt_decoder.module.js'
+import {spatialHuntConfig} from '~/experiences/spatial-hunt/config'
 
-const collectDurationMs = 420
+const collectDurationMs = spatialHuntConfig.crystal.collectDurationMs
 
 // 每顆晶體是一個 Group：實心 core、線框 glow 和 Points 粒子共用相同 targetId。
 // Raycaster 命中任何子物件後，都能回推到同一顆晶體。
@@ -69,7 +70,7 @@ const disposeTree = (root) => {
   })
 }
 
-const normalizeModel = (model, targetSize = 0.64) => {
+const normalizeModel = (model, targetSize = spatialHuntConfig.rover.modelSizeMeters) => {
   // 不依賴 GLB 原始單位：先量 bounding box，再統一縮放並把模型底部貼到 y = 0。
   const bounds = new THREE.Box3().setFromObject(model)
   const size = bounds.getSize(new THREE.Vector3())
@@ -163,7 +164,7 @@ export const createSpatialHuntPipeline = ({
     shadow.position.y = 0.004
     shadow.receiveShadow = true
 
-    crystalGroups = Array.from({length: 5}, (_, index) => createCrystal(index))
+    crystalGroups = Array.from({length: spatialHuntConfig.targetCount}, (_, index) => createCrystal(index))
     hitMeshes = crystalGroups.flatMap((group) => group.userData.hitMeshes)
     crystalGroups.forEach((group) => worldRoot.add(group))
 
@@ -341,7 +342,11 @@ export const createSpatialHuntPipeline = ({
 
     setRoverScale(scale) {
       // 只縮放車體，不縮放 worldRoot，避免改變晶體 0.8–1.5 公尺的遊戲距離。
-      roverScale = THREE.MathUtils.clamp(Number(scale) || 1, 0.55, 1.8)
+      roverScale = THREE.MathUtils.clamp(
+        Number(scale) || 1,
+        spatialHuntConfig.rover.minScale,
+        spatialHuntConfig.rover.maxScale,
+      )
       roverContainer?.scale.setScalar(roverScale)
       return roverScale
     },

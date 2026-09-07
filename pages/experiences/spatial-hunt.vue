@@ -15,6 +15,7 @@ import {
 } from '@lucide/vue'
 import {storeToRefs} from 'pinia'
 import * as THREE from 'three'
+import {spatialHuntConfig} from '~/experiences/spatial-hunt/config'
 import {create8thWallWorldAdapter} from '~/services/ar/8thWallWorldAdapter.client'
 import {createSpatialHuntPipeline} from '~/services/ar/createSpatialHuntPipeline.client'
 import {GAME_PHASES, useSpatialHuntStore} from '~/stores/spatialHunt'
@@ -74,7 +75,7 @@ const permissionErrorCodes = new Set(['NotAllowedError', 'PermissionDeniedError'
 const createRuntime = () => {
   adapter = create8thWallWorldAdapter()
   pipeline = createSpatialHuntPipeline({
-    assetUrl: `${runtimeConfig.app.baseURL}models/toy-car.glb`,
+    assetUrl: `${runtimeConfig.app.baseURL}${spatialHuntConfig.modelPath}`,
     onCollect: (targetId) => store.collect(targetId, performance.now(), window.localStorage),
     onSceneReady: () => {
       engineStatus.value = 'ready'

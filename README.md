@@ -2,6 +2,8 @@
 
 Nuxt 4 + Three.js 的行動 WebAR 實驗底座。第一個體驗是室內空間尋寶：放置探測車後，尋找並點擊五顆能量晶體。
 
+建議先閱讀 [WebAR 核心概念](docs/WEBAR-CORE-CONCEPTS.md)，理解相機、空間掃描、圖片偵測、anchor、render loop 與 teardown。接著再看 [WebAR POC Starter Guide](docs/POC-STARTER-GUIDE.md)，了解建立新 POC 時應複製與替換哪些檔案。
+
 ## 開發
 
 ```bash
@@ -42,9 +44,10 @@ npm run build
 ### 建議閱讀順序
 
 1. `stores/spatialHunt.js`：先看 phase 與計時，理解遊戲規則。
-2. `pages/experiences/spatial-hunt.vue`：看 Vue 如何協調 UI、adapter、pipeline 和手勢。
-3. `services/ar/8thWallWorldAdapter.client.js`：看相機／XR8 lifecycle 與 teardown。
-4. `services/ar/createSpatialHuntPipeline.client.js`：看 Three.js 場景、raycasting 和動畫。
-5. `utils/spawnLayout.js`：看五顆晶體如何產生在固定物理範圍內。
+2. `experiences/spatial-hunt/config.js`：看所有優先客製的參數。
+3. `pages/experiences/spatial-hunt.vue`：看 Vue 如何協調 UI、adapter、pipeline 和手勢。
+4. `services/ar/8thWallWorldAdapter.client.js`：看相機／XR8 lifecycle 與 teardown。
+5. `services/ar/createSpatialHuntPipeline.client.js`：看 Three.js 場景、raycasting 和動畫。
+6. `utils/spawnLayout.js`：看晶體如何產生在固定物理範圍內。
 
 8th Wall 的開源框架與 SLAM binary 授權不同。這個版本只作內部 Lab／作品 Demo；若改為白牌、自助式或收費平台，必須先重新審查 XR Engine License。素材與 binary notice 位於 `public/legal/`。
