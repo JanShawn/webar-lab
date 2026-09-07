@@ -1,17 +1,29 @@
-# WebAR Lab v0.1
+# WebAR Lab
 
-Nuxt 4 + Three.js 的行動 WebAR 實驗底座。第一個體驗是室內空間尋寶：放置探測車後，尋找並點擊五顆能量晶體。
+Nuxt 4 + Vue 3 + Three.js + 8th Wall 的 WebAR POC 專案。
 
-建議先閱讀 [WebAR 核心概念](docs/WEBAR-CORE-CONCEPTS.md)，理解相機、空間掃描、圖片偵測、anchor、render loop 與 teardown。接著再看 [WebAR POC Starter Guide](docs/POC-STARTER-GUIDE.md)，了解建立新 POC 時應複製與替換哪些檔案。
+如果你第一次看這個專案，只需要從一份文件開始：
 
-## 開發
+## [開始閱讀：WebAR POC 入門與客製指南](docs/START-HERE.md)
+
+它會一步一步說明：
+
+- 專案目錄為什麼這樣分類。
+- 每個重要檔案從哪裡來、解決什麼問題。
+- 掃描圖片到顯示模型的完整程式流程。
+- 新專案要複製哪些核心、哪些檔案不用拿。
+- 換圖片、GLB、動畫與互動時要修改哪裡。
+
+## 本機執行
 
 ```bash
 npm install
 npm run dev
 ```
 
-桌面瀏覽器可檢查首頁與錯誤替代畫面；完整空間追蹤需以 HTTPS 網址在支援的手機瀏覽器開啟。加入 `?debug=1` 可顯示 phase、tracking、FPS、模型載入時間與錯誤狀態。
+- 桌面可查看首頁與 UI。
+- 本機 `localhost` 可使用相機安全環境例外。
+- 手機正式測試要使用 HTTPS。
 
 ## 驗證
 
@@ -20,34 +32,10 @@ npm test
 npm run build
 ```
 
-單元測試涵蓋 phase transition、目標位置範圍與間距、收集去重、暫停計時及最佳時間儲存。
+GitHub Pages 由 `.github/workflows/deploy-pages.yml` 發佈。Image POC 部署後的入口：
 
-## 部署到 Vercel
+```text
+https://janshawn.github.io/webar-lab/experiences/image-scan/
+```
 
-1. 將 repository 匯入 Vercel，Framework Preset 選擇 Nuxt.js。
-2. 設定 `NUXT_PUBLIC_SITE_URL` 為 production HTTPS URL。
-3. 部署完成後首頁 QR code 會自動指向相同 origin 的體驗 route。
-
-`vercel.json` 已加入相機 Permissions Policy。直接重新整理 `/experiences/spatial-hunt` 會由 Nuxt/Vercel 正常處理。
-
-## 部署到 GitHub Pages
-
-`.github/workflows/deploy-pages.yml` 會在 `main` 更新時產生靜態網站，並以 `/webar-lab/` 作為 base URL。請在 GitHub repository 的 Settings → Pages 將 Source 設為 **GitHub Actions**。
-
-## 架構邊界
-
-- `services/ar/8thWallWorldAdapter.client.js`：唯一直接接觸 `XR8` globals 的 adapter。
-- `experiences/spatial-hunt/createScene.client.js`：這個 POC 的 Three.js scene、模型、raycasting 與動畫。
-- `experiences/spatial-hunt/store.js`：這個 POC 的 phase、計時、收集和最佳紀錄。
-- `data/experiences.js`：未來新增 Image Target、Face Effect 的共用 manifest 入口。
-
-### 建議閱讀順序
-
-1. `experiences/README.md`：先理解首頁索引與每個 POC 獨立資料夾的規則。
-2. `experiences/spatial-hunt/config.js`：看所有優先客製的參數。
-3. `pages/experiences/spatial-hunt.vue`：看 Vue 如何協調 UI、adapter、pipeline 和手勢。
-4. `services/ar/8thWallWorldAdapter.client.js`：看相機／XR8 lifecycle 與 teardown。
-5. `experiences/spatial-hunt/createScene.client.js`：看 Three.js 場景、raycasting 和動畫。
-6. `experiences/spatial-hunt/spawnLayout.js`：看晶體如何產生在固定物理範圍內。
-
-8th Wall 的開源框架與 SLAM binary 授權不同。這個版本只作內部 Lab／作品 Demo；若改為白牌、自助式或收費平台，必須先重新審查 XR Engine License。素材與 binary notice 位於 `public/legal/`。
+8th Wall 的開源框架與 SLAM binary 授權不同；若未來改成白牌或收費平台，需重新審查 XR Engine License。相關聲明放在 `public/legal/`。

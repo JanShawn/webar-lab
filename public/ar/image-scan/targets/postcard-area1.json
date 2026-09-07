@@ -1,0 +1,23 @@
+{
+  "imagePath": "image-targets/postcard-area1_luminance.png",
+  "metadata": null,
+  "name": "postcard-area1",
+  "type": "PLANAR",
+  "properties": {
+    "left": 0,
+    "top": 38,
+    "width": 985,
+    "height": 1313,
+    "isRotated": true,
+    "originalWidth": 985,
+    "originalHeight": 1389
+  },
+  "resources": {
+    "originalImage": "postcard-area1_original.png",
+    "croppedImage": "postcard-area1_cropped.png",
+    "thumbnailImage": "postcard-area1_thumbnail.png",
+    "luminanceImage": "postcard-area1_luminance.png"
+  },
+  "created": 1788765737784,
+  "updated": 1788765737784
+}
