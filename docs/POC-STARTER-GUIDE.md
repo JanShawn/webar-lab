@@ -18,9 +18,9 @@
 | 層級 | 目前檔案 | 負責什麼 | 客製時通常怎麼做 |
 | --- | --- | --- | --- |
 | 入口 UI | `pages/experiences/spatial-hunt.vue` | 按鈕、提示、HUD、手勢 | 大量修改 |
-| 遊戲流程 | `stores/spatialHunt.js` | phase、計時、收集、暫停 | 規則不同才修改 |
+| 遊戲流程 | `experiences/spatial-hunt/store.js` | phase、計時、收集、暫停 | 規則不同才修改 |
 | AR adapter | `services/ar/8thWallWorldAdapter.client.js` | 載入 XR8、開相機、tracking、停止相機 | 同引擎盡量保留 |
-| 3D scene | `services/ar/createSpatialHuntPipeline.client.js` | GLB、燈光、raycasting、動畫 | 大量修改 |
+| 3D scene | `experiences/spatial-hunt/createScene.client.js` | GLB、燈光、raycasting、動畫 | 大量修改 |
 | 客製設定 | `experiences/spatial-hunt/config.js` | 模型、數量、距離、尺寸 | 優先從這裡修改 |
 
 ```mermaid
@@ -148,13 +148,13 @@ export const spatialHuntConfig = {
 | 搜尋距離／高度 | `config.js` 的 `spawn` |
 | 車體大小／縮放限制 | `config.js` 的 `rover` |
 | 標題、說明、按鈕 | `spatial-hunt.vue` 的 template |
-| 晶體造型、顏色、粒子 | `createSpatialHuntPipeline.client.js` 的 `createCrystal()` |
+| 晶體造型、顏色、粒子 | `createScene.client.js` 的 `createCrystal()` |
 | 點擊後的遊戲規則 | pipeline 的 `onCollect` 與 store 的 `collect()` |
 | 整個 AR 引擎 | 替換 adapter |
 
 ### 通常需要改：Three.js pipeline
 
-[createSpatialHuntPipeline.client.js](../services/ar/createSpatialHuntPipeline.client.js) 是每個客製案最常修改的地方。
+[createScene.client.js](../experiences/spatial-hunt/createScene.client.js) 是每個客製案最常修改的地方。
 
 你可以把它理解成「沒有 Vue template 的 3D component」：
 

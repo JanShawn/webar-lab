@@ -1,7 +1,7 @@
 import {createPinia, setActivePinia} from 'pinia'
 import {beforeEach, describe, expect, it} from 'vitest'
-import {GAME_PHASES, useSpatialHuntStore} from '~/stores/spatialHunt'
-import {BEST_TIME_KEY} from '~/utils/time'
+import {GAME_PHASES, useSpatialHuntStore} from '~/experiences/spatial-hunt/store'
+import {BEST_TIME_KEY} from '~/experiences/spatial-hunt/time'
 
 const createStorage = () => {
   const values = new Map()

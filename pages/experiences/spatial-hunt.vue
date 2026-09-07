@@ -17,10 +17,10 @@ import {storeToRefs} from 'pinia'
 import * as THREE from 'three'
 import {spatialHuntConfig} from '~/experiences/spatial-hunt/config'
 import {create8thWallWorldAdapter} from '~/services/ar/8thWallWorldAdapter.client'
-import {createSpatialHuntPipeline} from '~/services/ar/createSpatialHuntPipeline.client'
-import {GAME_PHASES, useSpatialHuntStore} from '~/stores/spatialHunt'
-import {createSpawnLayout} from '~/utils/spawnLayout'
-import {formatElapsed} from '~/utils/time'
+import {createSpatialHuntPipeline} from '~/experiences/spatial-hunt/createScene.client'
+import {GAME_PHASES, useSpatialHuntStore} from '~/experiences/spatial-hunt/store'
+import {createSpawnLayout} from '~/experiences/spatial-hunt/spawnLayout'
+import {formatElapsed} from '~/experiences/spatial-hunt/time'
 
 definePageMeta({layout: false})
 

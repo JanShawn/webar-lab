@@ -2,7 +2,8 @@
 import {ArrowUpRight, Box, ScanLine, ShieldCheck, Smartphone} from '@lucide/vue'
 import {experiences} from '~/data/experiences'
 
-const experience = experiences[0]
+const readyCount = computed(() => experiences.filter(({status}) => status === 'ready').length)
+const statusLabels = {ready: '可測試', next: '下一個 POC', planned: '規劃中'}
 </script>
 
 <template>
@@ -19,7 +20,7 @@ const experience = experiences[0]
           <span class="technical-label block text-muted">Experimental build 01</span>
         </span>
       </NuxtLink>
-      <span class="technical-label rounded-full border border-line bg-panel/70 px-3 py-2 text-energy">1 ready</span>
+      <span class="technical-label rounded-full border border-line bg-panel/70 px-3 py-2 text-energy">{{ readyCount }} ready</span>
     </header>
 
     <main class="relative z-10 mx-auto max-w-6xl px-5 pb-16 pt-8 sm:px-8 sm:pt-16">
@@ -45,65 +46,64 @@ const experience = experiences[0]
       <section class="pt-8" aria-labelledby="experience-heading">
         <div class="mb-5 flex items-end justify-between gap-4">
           <div>
-            <p class="technical-label text-muted">Available experience</p>
-            <h2 id="experience-heading" class="mt-2 text-2xl font-semibold tracking-tight">目前可測試</h2>
+            <p class="technical-label text-muted">POC learning path</p>
+            <h2 id="experience-heading" class="mt-2 text-2xl font-semibold tracking-tight">一次完成一個 WebAR 核心能力</h2>
           </div>
-          <span class="hidden text-sm text-muted sm:block">請使用手機開啟以啟用相機與空間追蹤</span>
+          <span class="hidden text-sm text-muted sm:block">完成後才開放入口，避免同時維護過多實驗</span>
         </div>
 
-        <article class="group overflow-hidden rounded-[2rem] border border-line bg-panel/80 shadow-energy">
-          <div class="grid lg:grid-cols-[1.08fr_.92fr]">
-            <div class="relative min-h-[300px] overflow-hidden border-b border-line p-6 sm:min-h-[390px] sm:p-8 lg:border-b-0 lg:border-r">
-              <div class="absolute inset-0 bg-[radial-gradient(circle_at_50%_52%,rgba(132,247,178,.17),transparent_34%)]" aria-hidden="true" />
-              <div class="absolute inset-0 opacity-50" aria-hidden="true">
-                <div class="absolute left-1/2 top-1/2 h-44 w-44 -translate-x-1/2 -translate-y-1/2 rounded-full border border-energy/30" />
-                <div class="absolute left-1/2 top-1/2 h-64 w-64 -translate-x-1/2 -translate-y-1/2 rounded-full border border-dashed border-cyan/25" />
-              </div>
-              <div class="relative flex h-full flex-col justify-between">
-                <div class="flex items-center justify-between">
-                  <span class="technical-label rounded-full border border-energy/30 bg-energy/10 px-3 py-2 text-energy">Live prototype</span>
-                  <span class="technical-label text-muted">World / 001</span>
-                </div>
-                <div class="mx-auto grid h-28 w-28 place-items-center rounded-[2rem] border border-energy/40 bg-ink/80 shadow-[0_0_60px_rgba(132,247,178,.2)]">
-                  <Box :size="48" :stroke-width="1.4" class="text-energy" aria-hidden="true" />
-                </div>
-                <div class="grid grid-cols-5 gap-2" aria-label="五個能量晶體">
-                  <span v-for="index in 5" :key="index" class="h-1.5 rounded-full bg-energy/70" />
-                </div>
-              </div>
+        <div class="grid gap-5 lg:grid-cols-2">
+          <article
+            v-for="(experience, index) in experiences"
+            :key="experience.id"
+            class="glass-panel flex min-h-[27rem] flex-col rounded-[1.6rem] p-6 sm:p-8"
+            :class="experience.status === 'ready' ? 'border-energy/35 shadow-energy' : 'border-line'"
+          >
+            <div class="flex items-center justify-between gap-4">
+              <span class="technical-label text-muted">POC {{ String(index + 1).padStart(2, '0') }}</span>
+              <span
+                class="technical-label rounded-full border px-3 py-2"
+                :class="experience.status === 'ready' ? 'border-energy/30 bg-energy/10 text-energy' : experience.status === 'next' ? 'border-cyan/30 bg-cyan/10 text-cyan' : 'border-line bg-white/5 text-muted'"
+              >
+                {{ statusLabels[experience.status] }}
+              </span>
             </div>
 
-            <div class="flex flex-col justify-between p-6 sm:p-8 lg:p-10">
-              <div>
-                <p class="technical-label text-cyan">{{ experience.category }}</p>
-                <h3 class="mt-4 text-3xl font-semibold tracking-[-0.03em] sm:text-4xl">{{ experience.title }}</h3>
-                <p class="mt-4 text-base leading-7 text-muted">
-                  在室內放置科技探測車，移動手機尋找散落在空間中的五顆能量晶體。
-                </p>
-                <ul class="mt-7 grid gap-3 sm:grid-cols-2" aria-label="體驗能力">
-                  <li v-for="capability in experience.capabilities" :key="capability" class="flex items-center gap-2 text-sm text-white/90">
-                    <span class="h-1.5 w-1.5 rounded-full bg-energy" aria-hidden="true" />
-                    {{ capability }}
-                  </li>
-                </ul>
-              </div>
-
-              <div class="mt-10 flex items-end justify-between gap-6">
-                <NuxtLink
-                  :to="experience.route"
-                  class="inline-flex min-h-12 cursor-pointer items-center justify-center gap-2 rounded-xl bg-energy px-5 py-3 text-base font-semibold text-ink transition-colors duration-200 hover:bg-white"
-                >
-                  <Smartphone :size="19" aria-hidden="true" />
-                  開啟體驗
-                  <ArrowUpRight :size="18" aria-hidden="true" />
-                </NuxtLink>
-                <ClientOnly>
-                  <ExperienceQrCode :path="experience.route" :label="experience.title" class="hidden sm:block" />
-                </ClientOnly>
-              </div>
+            <div class="mt-8 grid h-16 w-16 place-items-center rounded-2xl border border-energy/25 bg-energy/10 text-energy">
+              <Box :size="30" :stroke-width="1.5" aria-hidden="true" />
             </div>
-          </div>
-        </article>
+
+            <div class="mt-6 flex-1">
+              <p class="technical-label text-cyan">{{ experience.category }}</p>
+              <h3 class="mt-3 text-2xl font-semibold tracking-[-0.03em] sm:text-3xl">{{ experience.title }}</h3>
+              <p class="mt-4 leading-7 text-muted">{{ experience.description }}</p>
+              <ul class="mt-6 grid gap-2 sm:grid-cols-2" :aria-label="`${experience.title}學習能力`">
+                <li v-for="capability in experience.capabilities" :key="capability" class="flex items-center gap-2 text-sm text-white/90">
+                  <span class="h-1.5 w-1.5 rounded-full bg-energy" aria-hidden="true" />
+                  {{ capability }}
+                </li>
+              </ul>
+            </div>
+
+            <div class="mt-8 flex items-end justify-between gap-5 border-t border-line pt-6">
+              <NuxtLink
+                v-if="experience.status === 'ready'"
+                :to="experience.route"
+                class="inline-flex min-h-12 items-center justify-center gap-2 rounded-xl bg-energy px-5 py-3 font-semibold text-ink transition-colors hover:bg-white"
+              >
+                <Smartphone :size="19" aria-hidden="true" />
+                開啟 POC
+                <ArrowUpRight :size="18" aria-hidden="true" />
+              </NuxtLink>
+              <span v-else class="inline-flex min-h-12 items-center rounded-xl border border-line px-5 text-sm font-semibold text-muted">
+                {{ experience.status === 'next' ? '準備下一步實作' : '尚未開始' }}
+              </span>
+              <ClientOnly v-if="experience.status === 'ready'">
+                <ExperienceQrCode :path="experience.route" :label="experience.title" class="hidden sm:block" />
+              </ClientOnly>
+            </div>
+          </article>
+        </div>
       </section>
 
       <footer class="mt-10 flex flex-col gap-3 border-t border-line pt-6 text-sm text-muted sm:flex-row sm:items-center sm:justify-between">

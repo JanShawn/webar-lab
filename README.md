@@ -37,17 +37,17 @@ npm run build
 ## 架構邊界
 
 - `services/ar/8thWallWorldAdapter.client.js`：唯一直接接觸 `XR8` globals 的 adapter。
-- `services/ar/createSpatialHuntPipeline.client.js`：Three.js scene、模型、raycasting 與動畫。
-- `stores/spatialHunt.js`：UI 與遊戲 phase、計時、收集和最佳紀錄。
+- `experiences/spatial-hunt/createScene.client.js`：這個 POC 的 Three.js scene、模型、raycasting 與動畫。
+- `experiences/spatial-hunt/store.js`：這個 POC 的 phase、計時、收集和最佳紀錄。
 - `data/experiences.js`：未來新增 Image Target、Face Effect 的共用 manifest 入口。
 
 ### 建議閱讀順序
 
-1. `stores/spatialHunt.js`：先看 phase 與計時，理解遊戲規則。
+1. `experiences/README.md`：先理解首頁索引與每個 POC 獨立資料夾的規則。
 2. `experiences/spatial-hunt/config.js`：看所有優先客製的參數。
 3. `pages/experiences/spatial-hunt.vue`：看 Vue 如何協調 UI、adapter、pipeline 和手勢。
 4. `services/ar/8thWallWorldAdapter.client.js`：看相機／XR8 lifecycle 與 teardown。
-5. `services/ar/createSpatialHuntPipeline.client.js`：看 Three.js 場景、raycasting 和動畫。
-6. `utils/spawnLayout.js`：看晶體如何產生在固定物理範圍內。
+5. `experiences/spatial-hunt/createScene.client.js`：看 Three.js 場景、raycasting 和動畫。
+6. `experiences/spatial-hunt/spawnLayout.js`：看晶體如何產生在固定物理範圍內。
 
 8th Wall 的開源框架與 SLAM binary 授權不同。這個版本只作內部 Lab／作品 Demo；若改為白牌、自助式或收費平台，必須先重新審查 XR Engine License。素材與 binary notice 位於 `public/legal/`。

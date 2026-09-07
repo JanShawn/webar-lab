@@ -288,15 +288,15 @@ adapter.switchCamera?.()   // Face／自拍體驗
 ```text
 services/ar/8thWallWorldAdapter.client.js
 pages/experiences/spatial-hunt.vue 裡的 startExperience／cleanupRuntime lifecycle
-services/ar/createSpatialHuntPipeline.client.js 的 module／dispose 骨架
+experiences/spatial-hunt/createScene.client.js 的 module／dispose 骨架
 public/legal/8TH-WALL-NOTICE.txt
 ```
 
 不要直接複製遊戲：
 
 ```text
-stores/spatialHunt.js
-utils/spawnLayout.js
+experiences/spatial-hunt/store.js
+experiences/spatial-hunt/spawnLayout.js
 晶體、計時、最佳成績
 ```
 
@@ -321,9 +321,9 @@ utils/spawnLayout.js
 
 1. [startExperience() 與 cleanupRuntime()](../pages/experiences/spatial-hunt.vue)：看一次 AR session 如何開始與結束。
 2. [8thWallWorldAdapter](../services/ar/8thWallWorldAdapter.client.js)：看相機與 tracking engine 如何被封裝。
-3. [createSpatialHuntPipeline](../services/ar/createSpatialHuntPipeline.client.js)：只先看 `module`、`placeAtScreen()` 和 `dispose()`。
+3. [createSpatialHuntPipeline](../experiences/spatial-hunt/createScene.client.js)：只先看 `module`、`placeAtScreen()` 和 `dispose()`。
 4. [POC config](../experiences/spatial-hunt/config.js)：看客製參數如何與核心分離。
-5. 最後才看 [spatialHunt store](../stores/spatialHunt.js)：這是遊戲，不是 AR 的必要部分。
+5. 最後才看 [spatialHunt store](../experiences/spatial-hunt/store.js)：這是遊戲，不是 AR 的必要部分。
 
 ## 你可以用這五題檢查任何 WebAR 專案
 

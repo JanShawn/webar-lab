@@ -1,5 +1,5 @@
 import {describe, expect, it} from 'vitest'
-import {BEST_TIME_KEY, formatElapsed, readBestTime, writeBestTime} from '~/utils/time'
+import {BEST_TIME_KEY, formatElapsed, readBestTime, writeBestTime} from '~/experiences/spatial-hunt/time'
 
 const createStorage = () => {
   const values = new Map()

@@ -1,6 +1,6 @@
 import {defineStore} from 'pinia'
-import {spatialHuntConfig} from '~/experiences/spatial-hunt/config'
-import {readBestTime, writeBestTime} from '~/utils/time'
+import {spatialHuntConfig} from './config'
+import {readBestTime, writeBestTime} from './time'
 
 export const GAME_PHASES = Object.freeze({
   INTRO: 'intro',

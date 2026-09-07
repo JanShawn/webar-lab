@@ -2,7 +2,7 @@ import {describe, expect, it} from 'vitest'
 import {
   MAX_HEIGHT_METERS, MAX_RADIUS_METERS, MIN_HEIGHT_METERS, MIN_RADIUS_METERS,
   TARGET_COUNT, createSpawnLayout, distanceBetweenTargets,
-} from '~/utils/spawnLayout'
+} from '~/experiences/spatial-hunt/spawnLayout'
 
 describe('createSpawnLayout', () => {
   it('creates five repeatable and unique targets', () => {

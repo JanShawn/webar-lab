@@ -1,4 +1,4 @@
-import {spatialHuntConfig} from '~/experiences/spatial-hunt/config'
+import {spatialHuntConfig} from './config'
 
 export const TARGET_COUNT = spatialHuntConfig.targetCount
 export const MIN_RADIUS = spatialHuntConfig.spawn.minRadiusMeters
