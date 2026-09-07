@@ -33,6 +33,7 @@ useHead({
 
 const route = useRoute()
 const router = useRouter()
+const runtimeConfig = useRuntimeConfig()
 const store = useSpatialHuntStore()
 const {
   phase,
@@ -66,6 +67,7 @@ const permissionErrorCodes = new Set(['NotAllowedError', 'PermissionDeniedError'
 const createRuntime = () => {
   adapter = create8thWallWorldAdapter()
   pipeline = createSpatialHuntPipeline({
+    assetUrl: `${runtimeConfig.app.baseURL}models/toy-car.glb`,
     onCollect: (targetId) => store.collect(targetId, performance.now(), window.localStorage),
     onSceneReady: () => {
       engineStatus.value = 'ready'

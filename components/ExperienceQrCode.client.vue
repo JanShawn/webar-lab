@@ -10,8 +10,9 @@ const config = useRuntimeConfig()
 const qrDataUrl = ref('')
 
 onMounted(async () => {
-  const origin = config.public.siteUrl || window.location.origin
-  const url = new URL(props.path, origin).toString()
+  const deploymentRoot = config.public.siteUrl || new URL(config.app.baseURL, window.location.origin).toString()
+  const normalizedPath = props.path.replace(/^\/+/, '')
+  const url = new URL(normalizedPath, deploymentRoot.endsWith('/') ? deploymentRoot : `${deploymentRoot}/`).toString()
   qrDataUrl.value = await QRCode.toDataURL(url, {
     width: 184,
     margin: 1,

@@ -28,6 +28,10 @@ npm run build
 
 `vercel.json` 已加入相機 Permissions Policy。直接重新整理 `/experiences/spatial-hunt` 會由 Nuxt/Vercel 正常處理。
 
+## 部署到 GitHub Pages
+
+`.github/workflows/deploy-pages.yml` 會在 `main` 更新時產生靜態網站，並以 `/webar-lab/` 作為 base URL。請在 GitHub repository 的 Settings → Pages 將 Source 設為 **GitHub Actions**。
+
 ## 架構邊界
 
 - `services/ar/8thWallWorldAdapter.client.js`：唯一直接接觸 `XR8` globals 的 adapter。
