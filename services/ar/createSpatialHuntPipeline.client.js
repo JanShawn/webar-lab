@@ -4,6 +4,8 @@ import {MeshoptDecoder} from 'three/addons/libs/meshopt_decoder.module.js'
 
 const collectDurationMs = 420
 
+// 每顆晶體是一個 Group：實心 core、線框 glow 和 Points 粒子共用相同 targetId。
+// Raycaster 命中任何子物件後，都能回推到同一顆晶體。
 const createCrystal = (index) => {
   const group = new THREE.Group()
   const id = `crystal-${index + 1}`
@@ -49,6 +51,8 @@ const createCrystal = (index) => {
 }
 
 const disposeTree = (root) => {
+  // Three.js 不會自動釋放 GPU geometry、material 和 texture。
+  // route 離開時集中 dispose，避免多次進出 AR 頁面後記憶體持續增加。
   const geometries = new Set()
   const materials = new Set()
 
@@ -66,6 +70,7 @@ const disposeTree = (root) => {
 }
 
 const normalizeModel = (model, targetSize = 0.64) => {
+  // 不依賴 GLB 原始單位：先量 bounding box，再統一縮放並把模型底部貼到 y = 0。
   const bounds = new THREE.Box3().setFromObject(model)
   const size = bounds.getSize(new THREE.Vector3())
   const scale = targetSize / Math.max(size.x, size.y, size.z, 0.001)
@@ -107,6 +112,8 @@ export const createSpatialHuntPipeline = ({
   const pointer = new THREE.Vector2()
 
   const setPointerFromScreen = (clientX, clientY) => {
+    // DOM 像素座標要先轉成 Three.js 的 Normalized Device Coordinates（-1 到 1），
+    // 才能從相機往場景發射 ray。
     const canvas = renderer.domElement
     const bounds = canvas.getBoundingClientRect()
     pointer.x = ((clientX - bounds.left) / bounds.width) * 2 - 1
@@ -115,6 +122,8 @@ export const createSpatialHuntPipeline = ({
   }
 
   const createSceneContent = () => {
+    // worldRoot 是玩家點地面後建立的「任務中心」。車子和五顆晶體都掛在它下面，
+    // 因此重新定位只要移動這個 root，不必逐一重算世界座標。
     worldRoot = new THREE.Group()
     worldRoot.name = 'spatial-hunt-world'
     worldRoot.visible = false
@@ -209,6 +218,7 @@ export const createSpatialHuntPipeline = ({
     }
 
     if (worldRoot?.visible) {
+      // 動畫使用絕對時間，而不是累加固定 frame delta；FPS 降低時仍維持接近相同速度。
       const ring = roverContainer.getObjectByName('rover-energy-ring')
       if (ring) {
         ring.rotation.z = seconds * 0.35
@@ -259,6 +269,7 @@ export const createSpatialHuntPipeline = ({
   }
 
   const module = {
+    // XR8 每幀會呼叫這個 pipeline module；onStart 只建立一次場景，onUpdate 負責動畫。
     name: 'spatial-hunt-scene',
     onStart: () => {
       const xrScene = window.XR8.Threejs.xrScene()
@@ -297,6 +308,7 @@ export const createSpatialHuntPipeline = ({
     placeAtScreen(clientX, clientY) {
       if (!scene || !camera || !renderer || disposed) return false
       setPointerFromScreen(clientX, clientY)
+      // 首版用 y = 0 的透明平面作放置面；使用者點擊處與它相交的位置就是任務中心。
       const intersection = raycaster.intersectObject(ground, false)[0]
       if (!intersection) return false
 
@@ -328,6 +340,7 @@ export const createSpatialHuntPipeline = ({
     },
 
     setRoverScale(scale) {
+      // 只縮放車體，不縮放 worldRoot，避免改變晶體 0.8–1.5 公尺的遊戲距離。
       roverScale = THREE.MathUtils.clamp(Number(scale) || 1, 0.55, 1.8)
       roverContainer?.scale.setScalar(roverScale)
       return roverScale

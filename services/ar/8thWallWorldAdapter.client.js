@@ -23,6 +23,8 @@ const vendorScripts = [
   },
 ]
 
+// 8th Wall 以瀏覽器 global 和自訂 ready event 提供 API。
+// 同時監聽 event 與輪詢 global，可處理 script 已快取、事件較早觸發等載入順序差異。
 const waitForGlobal = ({globalName, eventName, timeoutMs = SCRIPT_TIMEOUT_MS}) => new Promise((resolve, reject) => {
   if (window[globalName]) {
     resolve(window[globalName])
@@ -128,6 +130,8 @@ export const create8thWallWorldAdapter = () => {
     cameraReadyReject = null
   }
 
+  // 將 XR8 lifecycle 轉成平台自己的 tracking 訂閱介面。
+  // 因此 Vue、Pinia 和遊戲場景都不需要直接知道 XR8 event 的格式。
   const lifecycleModule = {
     name: 'webar-lab-lifecycle',
     listeners: [
@@ -161,6 +165,7 @@ export const create8thWallWorldAdapter = () => {
 
   return {
     async load() {
+      // XR8 Three.js pipeline 會從 window.THREE 取得同一份 Three.js runtime。
       if (!window.THREE) throw Object.assign(new Error('Three.js 尚未初始化'), {code: 'THREE_MISSING'})
       await loadScript(vendorScripts[0])
       await Promise.all(vendorScripts.slice(1).map(loadScript))
@@ -220,6 +225,8 @@ export const create8thWallWorldAdapter = () => {
         scale: 'absolute',
       })
 
+      // Pipeline 順序很重要：先把相機影像畫到 GL texture，再更新 Three.js 與 SLAM，
+      // 最後才執行我們自己的場景與 lifecycle modules。
       installedModules = [
         XR8.GlTextureRenderer.pipelineModule(),
         XR8.Threejs.pipelineModule(),
@@ -275,6 +282,7 @@ export const create8thWallWorldAdapter = () => {
       try {
         await window.XR8?.stop?.()
       } finally {
+        // stop() 失敗時仍主動停止 MediaStream track，確保離開 route 後相機指示燈會關閉。
         mediaStream?.getTracks?.().forEach((track) => track.stop())
         mediaStream = null
         if (installedModules.length) {
@@ -288,4 +296,3 @@ export const create8thWallWorldAdapter = () => {
     },
   }
 }
-

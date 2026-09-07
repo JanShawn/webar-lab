@@ -11,6 +11,7 @@ export const MAX_HEIGHT_METERS = MAX_HEIGHT
 const toRadians = (degrees) => degrees * (Math.PI / 180)
 
 const createRandom = (seed) => {
+  // 可重現的 pseudo-random generator：測試可使用固定 seed，重玩則使用時間作 seed。
   let value = Number(seed) || 1
 
   return () => {
@@ -28,6 +29,7 @@ const createRandom = (seed) => {
  */
 export const generateSpawnLayout = (seed = Date.now()) => {
   const random = createRandom(seed)
+  // 五個安全槽位均勻鋪在玩家前方 240°，再加入少量角度 jitter 避免每局完全相同。
   const angles = [-120, -60, 0, 60, 120]
 
   return angles.map((angle, index) => {

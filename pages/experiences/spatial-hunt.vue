@@ -57,6 +57,8 @@ const roverScale = ref(1)
 const debugEnabled = computed(() => route.query.debug === '1')
 const trackingIsLimited = computed(() => trackingStatus.value === 'LIMITED')
 
+// adapter 管 8th Wall，相機場景則由 pipeline 管；頁面只協調兩者與 Pinia 流程。
+// 這個分層讓未來換成 WebXR 或 MindAR 時，不必重寫遊戲 UI。
 let adapter = null
 let pipeline = null
 let unsubscribeTracking = null
@@ -88,6 +90,7 @@ const createRuntime = () => {
 }
 
 const handleTracking = ({status, reason}) => {
+  // Tracking lost 不重置遊戲，只暫停計時與點擊；NORMAL 後從原進度繼續。
   store.setTrackingStatus(status, reason)
   if (status === 'LIMITED') store.pause('tracking', performance.now())
   if (status === 'NORMAL') store.resume('tracking', performance.now())
@@ -101,6 +104,7 @@ const startExperience = async () => {
   window.THREE = THREE
 
   try {
+    // 啟動順序：建立模組 → 載入 vendor scripts → 相容性檢查 → 開啟相機。
     createRuntime()
     await adapter.load()
     const compatibility = adapter.checkCompatibility()
@@ -138,6 +142,7 @@ const beginPlayableRound = () => {
 }
 
 const handleCanvasPointer = (event) => {
+  // 同一個 canvas 在 placing 階段代表「放置」，playing 階段則代表「收集」。
   if (phase.value === GAME_PHASES.PLACING) {
     const placed = pipeline?.placeAtScreen(event.clientX, event.clientY)
     if (!placed) return
@@ -155,6 +160,7 @@ const pointerDistance = () => {
 }
 
 const handlePointerDown = (event) => {
+  // Map 以 pointerId 同時追蹤兩根手指；滑鼠與單指仍會走一般點擊流程。
   activePointers.set(event.pointerId, {x: event.clientX, y: event.clientY})
   canvas.value?.setPointerCapture?.(event.pointerId)
   if (activePointers.size === 2 && phase.value === GAME_PHASES.PLAYING) {
@@ -169,11 +175,13 @@ const handlePointerMove = (event) => {
   activePointers.set(event.pointerId, {x: event.clientX, y: event.clientY})
   if (activePointers.size !== 2 || !pinchStartDistance) return
 
+  // 手指距離的比例就是新的模型比例，最後由 pipeline 限制在 55%～180%。
   const nextScale = pinchStartScale * (pointerDistance() / pinchStartDistance)
   roverScale.value = pipeline?.setRoverScale(nextScale) || roverScale.value
 }
 
 const handlePointerUp = (event) => {
+  // pinch 結束通常會連續產生兩次 pointerup；suppressTap 避免誤收集晶體。
   const isSingleTap = activePointers.size === 1 && !suppressTap
   activePointers.delete(event.pointerId)
   if (activePointers.size < 2) pinchStartDistance = null
@@ -204,6 +212,7 @@ const leaveExperience = async () => {
 }
 
 const handleVisibilityChange = () => {
+  // visibilitychange 同時處理切 App 與鎖定螢幕，並通知 XR8 暫停相機 pipeline。
   if (document.hidden) {
     store.pause('visibility', performance.now())
     adapter?.pause()
@@ -219,6 +228,7 @@ const runClock = (now) => {
 }
 
 const cleanupRuntime = async () => {
+  // 多個 Vue lifecycle 可能同時要求清理；共用 Promise 確保 teardown 只執行一次。
   if (cleanupPromise) return cleanupPromise
 
   cleanupPromise = (async () => {

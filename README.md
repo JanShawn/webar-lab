@@ -39,4 +39,12 @@ npm run build
 - `stores/spatialHunt.js`：UI 與遊戲 phase、計時、收集和最佳紀錄。
 - `data/experiences.js`：未來新增 Image Target、Face Effect 的共用 manifest 入口。
 
+### 建議閱讀順序
+
+1. `stores/spatialHunt.js`：先看 phase 與計時，理解遊戲規則。
+2. `pages/experiences/spatial-hunt.vue`：看 Vue 如何協調 UI、adapter、pipeline 和手勢。
+3. `services/ar/8thWallWorldAdapter.client.js`：看相機／XR8 lifecycle 與 teardown。
+4. `services/ar/createSpatialHuntPipeline.client.js`：看 Three.js 場景、raycasting 和動畫。
+5. `utils/spawnLayout.js`：看五顆晶體如何產生在固定物理範圍內。
+
 8th Wall 的開源框架與 SLAM binary 授權不同。這個版本只作內部 Lab／作品 Demo；若改為白牌、自助式或收費平台，必須先重新審查 XR Engine License。素材與 binary notice 位於 `public/legal/`。
