@@ -88,8 +88,10 @@ const applyTrackedTarget = (target) => {
 }
 
 // POC 行為：失去圖片時要隱藏或切到相機前方，由 config 決定。
+// 為了符合「掃到過一次後遺失焦點仍保留展示」的需求，
+// 不再把 camera-lock 綁死在 foundOnce；只要模型已載入，就應該切到相機前方。
 const handleTargetLost = () => {
-  if (!character || !foundOnce) return
+  if (!character) return
   if (imageScanConfig.tracking.lostBehavior === 'camera-lock') {
     character.attachToCamera()
     // 每次剛進入相機展示都從 config 的可預期角度開始，再交給使用者旋轉縮放。
