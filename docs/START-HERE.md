@@ -70,8 +70,9 @@ ar/
 │  └─ errors.js
 └─ providers/
    └─ 8thwall/
-      ├─ index.client.js
-      ├─ session.client.js
+       ├─ index.client.js
+       ├─ configuration.js
+       ├─ session.client.js
       ├─ imageTracking.client.js
       └─ scriptLoader.client.js
 
@@ -158,11 +159,16 @@ npm run target:create
 | --- | --- |
 | `postcard-area1.json` | 圖片特徵 metadata，tracking 必要 |
 | `postcard-area1_luminance.png` | 引擎辨識用圖片，tracking 必要 |
-| `postcard-area1_original.png` | POC 開始畫面的掃描提示圖 |
+| `postcard-area1_original.png` | CLI 內部保存的原圖版本，橫圖可能會被轉成直式 |
+| `postcard-area1_preview.png` | POC 開始畫面的橫式掃描提示圖，不參與辨識 |
 | `*_cropped.png` | CLI 產生的裁切檢查圖，目前程式未使用 |
 | `*_thumbnail.png` | CLI 產生的縮圖，目前程式未使用 |
 
 JSON 和 luminance 圖不是手寫程式，不建議手動修改。換目標圖片時應重新執行 CLI。
+
+若來源是橫圖，CLI 為了產生 480×640 的辨識資料，可能把
+`*_original.png` 一起旋轉。這不影響 tracking，但它不適合直接拿來當 UI 預覽。
+請另外保留方向正確的 `*_preview.png`，並在 config 的 `previewPath` 指向它。
 
 ### 工具產生的最佳化 GLB
 

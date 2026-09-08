@@ -12,7 +12,8 @@ export const imageScanConfig = {
     name: 'postcard-area1',
     metadataPath: '/experiences/image-scan/targets/postcard-area1.json',
     imagePath: '/experiences/image-scan/targets/postcard-area1_luminance.png',
-    previewPath: '/experiences/image-scan/targets/postcard-area1_original.png',
+    // preview 使用未旋轉的原始橫圖；CLI 的 *_original.png 可能為了辨識被轉成直式。
+    previewPath: '/experiences/image-scan/targets/postcard-area1_preview.png',
   },
   model: {
     // 客製入口 3：換案件時通常只需要換 GLB 路徑，再微調 maxSize。

@@ -335,7 +335,23 @@ button, a { pointer-events: auto; }
 .bottom-card small { margin-top: .2rem; color: #a7b9af; font-size: .72rem; line-height: 1.35; }
 .interaction-hint { position: absolute; top: calc(env(safe-area-inset-top) + 5.3rem); left: 50%; display: flex; align-items: center; gap: .45rem; padding: .62rem .75rem; transform: translateX(-50%); border: 1px solid #ffffff26; border-radius: 999px; color: #ddffe8; background: #06100bd9; font-size: .72rem; white-space: nowrap; }
 .interaction-hint span { color: #79f59f; }
-.debug-panel { position: absolute; right: .75rem; bottom: calc(env(safe-area-inset-bottom) + 6rem); display: grid; gap: .2rem; padding: .6rem; border: 1px solid #79f59f55; border-radius: .55rem; color: #b9ffd0; background: #020704e8; font: .62rem/1.35 monospace; pointer-events: auto; }
+.debug-panel {
+  position: absolute;
+  right: .5rem;
+  bottom: calc(env(safe-area-inset-bottom) + .5rem);
+  left: .5rem;
+  display: flex;
+  flex-wrap: wrap;
+  gap: .2rem .65rem;
+  padding: .5rem;
+  border: 1px solid #79f59f55;
+  border-radius: .55rem;
+  color: #b9ffd0;
+  background: #020704e8;
+  font: .6rem/1.35 monospace;
+  pointer-events: none;
+}
+.debug-panel b { width: 100%; }
 @keyframes spin { to { transform: rotate(360deg); } }
 @media (min-width: 640px) { .bottom-card { right: auto; width: 29rem; } }
 </style>

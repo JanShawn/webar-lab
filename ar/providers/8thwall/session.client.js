@@ -5,6 +5,7 @@
  */
 import {createARError} from '../../core/errors'
 import {createTrackingPose} from '../../core/trackingTypes'
+import {createXrControllerConfiguration} from './configuration'
 import {create8thWallImageTrackingModule, load8thWallImageTargetData} from './imageTracking.client'
 import {load8thWallScript} from './scriptLoader.client'
 
@@ -209,12 +210,7 @@ export const create8thWallSession = ({
       if (!XR8 || !XRExtras || !LandingPage) throw createARError('ENGINE_UNAVAILABLE')
 
       // Provider 核心 2：只有這個資料夾可以知道 XR8 的 configure 格式。
-      const xrConfiguration = {
-        disableWorldTracking: mode === 'image',
-        enableLighting: mode === 'world',
-        leftHandedAxes: false,
-        scale: 'absolute',
-      }
+      const xrConfiguration = createXrControllerConfiguration(mode)
       if (mode === 'image') xrConfiguration.imageTargetData = resolvedImageTargetData
       XR8.XrController.configure(xrConfiguration)
 

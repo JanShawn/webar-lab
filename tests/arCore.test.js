@@ -2,6 +2,7 @@ import {describe, expect, it, vi} from 'vitest'
 import {createARProvider} from '~/ar/core/createARProvider'
 import {createTrackingPose} from '~/ar/core/trackingTypes'
 import {create8thWallProvider} from '~/ar/providers/8thwall/index.client'
+import {createXrControllerConfiguration} from '~/ar/providers/8thwall/configuration'
 import {create8thWallImageTrackingModule} from '~/ar/providers/8thwall/imageTracking.client'
 import {createScene} from '~/3d/createScene.client'
 import {createImageModelController} from '~/experiences/image-scan/createImageModelController.client'
@@ -99,6 +100,17 @@ describe('Three.js content scene', () => {
 })
 
 describe('8th Wall image event bridge', () => {
+  it('does not request metric scale while image mode has world tracking disabled', () => {
+    expect(createXrControllerConfiguration('image')).toMatchObject({
+      disableWorldTracking: true,
+      scale: 'responsive',
+    })
+    expect(createXrControllerConfiguration('world')).toMatchObject({
+      disableWorldTracking: false,
+      scale: 'absolute',
+    })
+  })
+
   it('normalizes imagefound before notifying the app', () => {
     const onFound = vi.fn()
     const module = create8thWallImageTrackingModule({
