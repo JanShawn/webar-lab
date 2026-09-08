@@ -5,6 +5,7 @@ import {create8thWallProvider} from '~/ar/providers/8thwall/index.client'
 import {createXrControllerConfiguration} from '~/ar/providers/8thwall/configuration'
 import {create8thWallImageTrackingModule} from '~/ar/providers/8thwall/imageTracking.client'
 import {createScene} from '~/3d/createScene.client'
+import {createModelGestureControls} from '~/3d/interaction/createModelGestureControls.client'
 import {createImageModelController} from '~/experiences/image-scan/createImageModelController.client'
 import {useARSession} from '~/composables/useARSession'
 import * as THREE from 'three'
@@ -93,9 +94,58 @@ describe('Three.js content scene', () => {
       scale: 1,
     })
     expect(character.root.parent).toBe(contentRoot)
+    expect(character.gestureRoot.parent.name).toBe('image-ar-placement-pivot')
     character.attachToCamera()
     expect(character.root.parent).toBe(camera)
     expect(character.getDisplayMode()).toBe('camera-lock')
+  })
+})
+
+describe('camera-lock model gestures', () => {
+  const createFakeCanvas = () => {
+    const listeners = new Map()
+    return {
+      addEventListener: (type, listener) => listeners.set(type, listener),
+      removeEventListener: (type) => listeners.delete(type),
+      emit: (type, event) => listeners.get(type)?.({preventDefault: vi.fn(), ...event}),
+      getBoundingClientRect: () => ({left: 0, top: 0, width: 300, height: 600}),
+      setPointerCapture: vi.fn(),
+      releasePointerCapture: vi.fn(),
+    }
+  }
+
+  it('rotates with one pointer and scales within limits with two pointers', () => {
+    const canvas = createFakeCanvas()
+    const transformRoot = new THREE.Group()
+    const characterRoot = new THREE.Group()
+    characterRoot.visible = true
+    const controls = createModelGestureControls({
+      canvas,
+      camera: new THREE.PerspectiveCamera(),
+      characterRoot,
+      transformRoot,
+      minScale: 0.5,
+      maxScale: 1.8,
+      rotationSpeedDegrees: 0.5,
+    })
+
+    canvas.emit('pointerdown', {pointerId: 1, clientX: 100, clientY: 100})
+    canvas.emit('pointermove', {pointerId: 1, clientX: 120, clientY: 110})
+    canvas.emit('pointerup', {pointerId: 1, clientX: 120, clientY: 110})
+    expect(THREE.MathUtils.radToDeg(transformRoot.rotation.y)).toBeCloseTo(10)
+    expect(THREE.MathUtils.radToDeg(transformRoot.rotation.x)).toBeCloseTo(5)
+
+    canvas.emit('pointerdown', {pointerId: 1, clientX: 50, clientY: 100})
+    canvas.emit('pointerdown', {pointerId: 2, clientX: 150, clientY: 100})
+    canvas.emit('pointermove', {pointerId: 2, clientX: 350, clientY: 100})
+    expect(transformRoot.scale.x).toBe(1.8)
+    expect(transformRoot.scale.y).toBe(1.8)
+
+    controls.reset()
+    expect(transformRoot.scale.x).toBe(1)
+    expect(transformRoot.rotation.x).toBe(0)
+    expect(transformRoot.rotation.y).toBe(0)
+    controls.dispose()
   })
 })
 

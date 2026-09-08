@@ -22,21 +22,29 @@ export const createImageModelController = ({scene, camera, contentRoot, modelRoo
   const anchor = new THREE.Group()
   anchor.name = 'image-ar-anchor'
   anchor.visible = false
-  const modelPivot = new THREE.Group()
-  modelPivot.name = 'image-ar-model-pivot'
-  modelPivot.add(modelRoot)
-  anchor.add(modelPivot)
+
+  // placementPivot 只處理「案件預設的位置與角度」。
+  // gesturePivot 只處理「使用者拖曳／縮放」。兩層分開後，調整 config 不會覆蓋手勢。
+  const placementPivot = new THREE.Group()
+  placementPivot.name = 'image-ar-placement-pivot'
+  const gesturePivot = new THREE.Group()
+  gesturePivot.name = 'image-ar-gesture-pivot'
+  gesturePivot.add(modelRoot)
+  placementPivot.add(gesturePivot)
+  anchor.add(placementPivot)
   contentRoot.add(anchor)
   let displayMode = 'hidden'
 
-  const applyModelTransform = (transform) => {
+  const applyPlacementTransform = (transform) => {
     const position = transform?.position || {}
-    modelPivot.position.set(position.x || 0, position.y || 0, position.z || 0)
-    setEulerDegrees(modelPivot, transform?.rotationDegrees)
+    placementPivot.position.set(position.x || 0, position.y || 0, position.z || 0)
+    setEulerDegrees(placementPivot, transform?.rotationDegrees)
   }
 
   return {
     root: anchor,
+    // 手勢 controller 只會改這一層，不直接碰 image anchor。
+    gestureRoot: gesturePivot,
     getDisplayMode: () => displayMode,
 
     attachToTarget(target) {
@@ -45,7 +53,7 @@ export const createImageModelController = ({scene, camera, contentRoot, modelRoo
       anchor.position.set(target.position.x, target.position.y, target.position.z)
       anchor.quaternion.set(target.rotation.x, target.rotation.y, target.rotation.z, target.rotation.w)
       anchor.scale.setScalar(target.scale || 1)
-      applyModelTransform(config.targetTransform)
+      applyPlacementTransform(config.targetTransform)
       anchor.visible = true
       displayMode = 'image-target'
     },
@@ -58,7 +66,7 @@ export const createImageModelController = ({scene, camera, contentRoot, modelRoo
       anchor.position.set(transform.position.x, transform.position.y, transform.position.z)
       setEulerDegrees(anchor, {x: 0, y: 0, z: 0})
       anchor.scale.setScalar(transform.scale || 1)
-      applyModelTransform({position: {x: 0, y: 0, z: 0}, rotationDegrees: transform.rotationDegrees})
+      applyPlacementTransform({position: {x: 0, y: 0, z: 0}, rotationDegrees: transform.rotationDegrees})
       anchor.visible = true
       displayMode = 'camera-lock'
     },

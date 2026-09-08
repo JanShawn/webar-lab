@@ -30,9 +30,9 @@ export const experiences = [
     title: '圖片掃描與模型互動',
     category: 'Image Tracking',
     engine: '8th Wall Image Targets + Three.js',
-    capabilities: ['指定圖片偵測', 'Image Anchor', '失焦展示模式', '點擊動畫'],
+    capabilities: ['指定圖片偵測', 'Image Anchor', '失焦展示模式', '旋轉縮放互動'],
     status: 'ready',
-    description: '掃描小山靈明信片顯示模型；失去圖片後切換到相機前方展示，並支援點擊動畫。',
+    description: '掃描小山靈明信片顯示模型；失去圖片後切換到相機前方展示，支援點擊、旋轉與縮放。',
     route: '/experiences/image-scan',
   },
   {

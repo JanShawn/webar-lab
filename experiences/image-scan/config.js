@@ -25,10 +25,21 @@ export const imageScanConfig = {
       rotationDegrees: {x: 90, y: 0, z: 0},
     },
     cameraTransform: {
-      // Three.js camera 朝 -Z；Y 與 Z 距離接近，約為相機前上方 45 度。
-      position: {x: 0, y: 0.62, z: -0.72},
-      rotationDegrees: {x: 58, y: 0, z: 0},
-      scale: 0.82,
+      // 相機看向 -Z：z 越負越遠；y 負值會讓模型落在畫面中央稍下方。
+      // x 旋轉 35 度會露出模型上方，形成斜上觀看，而不是把模型本身移到畫面上方。
+      position: {x: 0, y: -0.16, z: -1.05},
+      rotationDegrees: {x: 35, y: 0, z: 0},
+      scale: 1,
+    },
+    gestures: {
+      // 客製入口 5：相機展示模式的單指旋轉與雙指縮放範圍。
+      initialScale: 1,
+      initialRotationDegrees: {x: 0, y: 0, z: 0},
+      minScale: 0.55,
+      maxScale: 1.8,
+      rotationSpeedDegrees: 0.35,
+      minPitchDegrees: -35,
+      maxPitchDegrees: 55,
     },
   },
   tracking: {
@@ -36,7 +47,7 @@ export const imageScanConfig = {
     lostBehavior: 'camera-lock',
   },
   animation: {
-    // 客製入口 5：名稱必須與 GLB 內的 Animation Clip 完全相同。
+    // 客製入口 6：名稱必須與 GLB 內的 Animation Clip 完全相同。
     idle: 'sceneMerge',
     onClick: 'sceneMerge',
   },

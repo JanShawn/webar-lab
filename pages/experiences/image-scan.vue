@@ -19,7 +19,7 @@ import {
 import {imageScanConfig} from '~/experiences/image-scan/config'
 import {loadCharacter} from '~/3d/modelLoader/loadCharacter.client'
 import {createAnimationController} from '~/3d/animation/createAnimationController'
-import {createCharacterInteraction} from '~/3d/interaction/createCharacterInteraction.client'
+import {createModelGestureControls} from '~/3d/interaction/createModelGestureControls.client'
 import {createImageModelController} from '~/experiences/image-scan/createImageModelController.client'
 
 definePageMeta({layout: false})
@@ -38,6 +38,10 @@ const modelError = ref('')
 const displayMode = ref('hidden')
 const interactionCount = ref(0)
 const availableAnimations = ref([])
+const modelTransform = ref({
+  scale: imageScanConfig.model.gestures.initialScale,
+  rotationDegrees: {...imageScanConfig.model.gestures.initialRotationDegrees},
+})
 const debugEnabled = computed(() => route.query.debug === '1')
 
 const session = useARSession()
@@ -76,6 +80,9 @@ const withBaseURL = (path) => {
 const applyTrackedTarget = (target) => {
   if (!character || !target) return
   foundOnce = true
+
+  // 從 camera-lock 回到圖片時清除使用者手勢，確保模型重新貼齊圖片。
+  if (character.getDisplayMode() !== 'image-target') interactionController?.reset()
   character.attachToTarget(target)
   displayMode.value = character.getDisplayMode()
 }
@@ -83,8 +90,11 @@ const applyTrackedTarget = (target) => {
 // POC 行為：失去圖片時要隱藏或切到相機前方，由 config 決定。
 const handleTargetLost = () => {
   if (!character || !foundOnce) return
-  if (imageScanConfig.tracking.lostBehavior === 'camera-lock') character.attachToCamera()
-  else character.hide()
+  if (imageScanConfig.tracking.lostBehavior === 'camera-lock') {
+    character.attachToCamera()
+    // 每次剛進入相機展示都從 config 的可預期角度開始，再交給使用者旋轉縮放。
+    interactionController?.reset()
+  } else character.hide()
   displayMode.value = character.getDisplayMode()
 }
 
@@ -100,6 +110,15 @@ const handleCharacterClick = () => {
   interactionCount.value += 1
 }
 
+const handleModelTransform = (transform) => {
+  // Vue 只保存數字供 UI / debug 顯示；真正的 Three.js 變形由 gesture controller 負責。
+  modelTransform.value = transform
+}
+
+const resetModelView = () => {
+  interactionController?.reset()
+}
+
 const disposeCharacterRuntime = () => {
   unsubscribeFrame?.()
   unsubscribeFrame = null
@@ -111,6 +130,10 @@ const disposeCharacterRuntime = () => {
   character = null
   characterAsset = null
   displayMode.value = 'hidden'
+  modelTransform.value = {
+    scale: imageScanConfig.model.gestures.initialScale,
+    rotationDegrees: {...imageScanConfig.model.gestures.initialRotationDegrees},
+  }
 }
 
 const stopExperience = async () => {
@@ -169,11 +192,16 @@ const startExperience = async () => {
       idleAnimation: imageScanConfig.animation.idle,
     })
     availableAnimations.value = animationController.animationNames
-    interactionController = createCharacterInteraction({
+    interactionController = createModelGestureControls({
       canvas: canvas.value,
       camera: result.scene.camera,
       characterRoot: character.root,
-      onClick: handleCharacterClick,
+      transformRoot: character.gestureRoot,
+      // 圖片追蹤時只允許點擊；失焦切到 camera-lock 後才開放旋轉與縮放。
+      isManipulationEnabled: () => character?.getDisplayMode() === 'camera-lock',
+      onTap: handleCharacterClick,
+      onTransform: handleModelTransform,
+      ...imageScanConfig.model.gestures,
     })
     unsubscribeFrame = result.provider.onFrame(({deltaSeconds}) => animationController?.update(deltaSeconds))
 
@@ -277,14 +305,25 @@ onBeforeUnmount(() => {
           <b v-else>圖片已離開，切換成相機展示</b>
           <small v-if="displayMode === 'hidden'">讓完整圖案出現在畫面中並保持穩定</small>
           <small v-else-if="displayMode === 'image-target'">移動明信片，模型會持續跟著圖片</small>
-          <small v-else>模型固定在相機前上方；重新掃到圖片會自動切回</small>
+          <small v-else>模型固定在畫面中央稍下方；可旋轉縮放，重新掃圖會自動切回</small>
         </div>
       </section>
 
       <div v-if="modelStatus === 'ready' && displayMode !== 'hidden'" class="interaction-hint">
-        <Hand :size="16" /> 點擊模型播放動畫
+        <Hand :size="16" />
+        <template v-if="displayMode === 'camera-lock'">單指旋轉 · 雙指縮放</template>
+        <template v-else>點擊模型播放動畫</template>
         <span v-if="interactionCount">已互動 {{ interactionCount }} 次</span>
       </div>
+
+      <button
+        v-if="modelStatus === 'ready' && displayMode === 'camera-lock'"
+        class="model-reset-button"
+        type="button"
+        @click.stop="resetModelView"
+      >
+        <RefreshCw :size="15" />重設模型
+      </button>
 
       <aside v-if="debugEnabled" class="debug-panel">
         <b>DEBUG</b>
@@ -293,6 +332,8 @@ onBeforeUnmount(() => {
         <span>image: {{ imageTrackingStatus }}</span>
         <span>display: {{ displayMode }}</span>
         <span>model: {{ modelStatus }}</span>
+        <span>scale: {{ modelTransform.scale.toFixed(2) }}</span>
+        <span>rotate: x {{ modelTransform.rotationDegrees.x.toFixed(0) }}° / y {{ modelTransform.rotationDegrees.y.toFixed(0) }}°</span>
         <span>animations: {{ availableAnimations.length }}</span>
       </aside>
     </div>
@@ -335,6 +376,7 @@ button, a { pointer-events: auto; }
 .bottom-card small { margin-top: .2rem; color: #a7b9af; font-size: .72rem; line-height: 1.35; }
 .interaction-hint { position: absolute; top: calc(env(safe-area-inset-top) + 5.3rem); left: 50%; display: flex; align-items: center; gap: .45rem; padding: .62rem .75rem; transform: translateX(-50%); border: 1px solid #ffffff26; border-radius: 999px; color: #ddffe8; background: #06100bd9; font-size: .72rem; white-space: nowrap; }
 .interaction-hint span { color: #79f59f; }
+.model-reset-button { position: absolute; top: calc(env(safe-area-inset-top) + 8.25rem); left: 50%; display: flex; min-height: 36px; align-items: center; gap: .4rem; padding: .5rem .7rem; transform: translateX(-50%); border: 1px solid #ffffff26; border-radius: 999px; color: #ddffe8; background: #06100bd9; font-size: .7rem; font-weight: 750; pointer-events: auto; }
 .debug-panel {
   position: absolute;
   right: .5rem;

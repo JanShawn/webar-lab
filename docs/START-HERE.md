@@ -4,7 +4,7 @@
 
 先記住目標：
 
-> 這份 POC 證明「瀏覽器能辨識指定圖片、顯示 GLB、圖片失焦後把模型固定在相機前、點擊模型播放動畫」。
+> 這份 POC 證明「瀏覽器能辨識指定圖片、顯示 GLB、圖片失焦後把模型固定在相機前，並讓使用者點擊、旋轉與縮放模型」。
 
 後續客製通常只換圖片、GLB、位置、動畫和點擊後行為，不需要重寫相機與 tracking 核心。
 
@@ -80,7 +80,7 @@ ar/
 ├─ createScene.client.js
 ├─ modelLoader/loadCharacter.client.js
 ├─ animation/createAnimationController.js
-└─ interaction/createCharacterInteraction.client.js
+└─ interaction/createModelGestureControls.client.js
 
 components/ar/
 └─ Canvas.vue
@@ -115,11 +115,12 @@ public/experiences/
 | `pages/experiences/image-scan.vue` | Image POC 的 UI 與流程入口 | 會，改文案與互動 |
 | `experiences/image-scan/config.js` | 集中圖片、GLB、位置與動畫設定 | 最常修改 |
 | `createImageModelController.client.js` | 在圖片 anchor 與相機 anchor 間切換 | 行為不同才改 |
+| `createModelGestureControls.client.js` | 將短按、單指拖曳、雙指張合轉成 3D 互動 | 通常只改 config 參數 |
 | `useARSession.js` | 統一開始、錯誤、背景暫停與停止 | 通常不改 |
 | `useImageTracking.js` | 將 found/updated/lost 變成 Vue 狀態 | 通常不改 |
 | `ar/core/` | 統一 provider 介面、pose 與錯誤 | 通常不改 |
 | `ar/providers/8thwall/` | 唯一直接使用 XR8 的位置 | 換引擎才改 |
-| `3d/` | GLB、動畫、燈光、raycasting、dispose | 新增 3D 能力才改 |
+| `3d/` | GLB、動畫、燈光、點擊、旋轉、縮放、dispose | 新增 3D 能力才改 |
 | `components/ar/Canvas.vue` | 提供 AR 相機與 Three.js 共用 canvas | 通常不改 |
 
 ### 工具產生的 Image Target 檔案
@@ -314,8 +315,9 @@ attachToTarget(target)
 Three.js scene
 └─ contentRoot
    └─ image anchor
-      └─ modelPivot
-         └─ GLB
+      └─ placementPivot（案件預設位置／角度）
+         └─ gesturePivot（使用者旋轉／縮放）
+            └─ GLB
 ```
 
 圖片移動時，`imageupdated` 會一直更新 anchor，所以模型看起來貼在圖片上。
@@ -327,17 +329,79 @@ Three.js scene
 ```text
 camera
 └─ image anchor
-   └─ modelPivot
-      └─ GLB
+   └─ placementPivot（相機展示的預設角度）
+      └─ gesturePivot（使用者旋轉／縮放）
+         └─ GLB
 ```
 
-因此手機怎麼移動，模型都會保持在畫面前方。位置與約 45 度角由 `config.js` 的 `cameraTransform` 控制。
+因此手機怎麼移動，模型都會保持在畫面前方。固定位置由 `config.js` 的 `cameraTransform` 控制：
+
+```js
+cameraTransform: {
+  position: {x: 0, y: -0.16, z: -1.05},
+  rotationDegrees: {x: 35, y: 0, z: 0},
+  scale: 1,
+}
+```
+
+請先把 camera 想成在 `{x: 0, y: 0, z: 0}`，而且朝向負的 Z 軸：
+
+| 想調整的效果 | 要改的值 | 白話說明 |
+| --- | --- | --- |
+| 左右位置 | `position.x` | 負值往畫面左，正值往右 |
+| 上下位置 | `position.y` | 正值往上，負值往下 |
+| 與相機距離 | `position.z` | 必須在相機前方，所以使用負值；`-1.5` 比 `-0.8` 遠 |
+| 預設俯視感 | `rotationDegrees.x` | 正值會讓模型頂部朝向相機，目前是 35 度 |
+| 整體初始大小 | `scale` | `1.2` 比 `1` 大，`0.8` 比 `1` 小 |
+
+原本的位置使用 `y: 0.62`，意思是把模型直接推到畫面上方；那和「從斜上方看模型」是兩件事。現在改成 `y: -0.16` 讓模型落在畫面中央稍下方，再使用 `rotationDegrees.x: 35` 做出俯視角度。
 
 再次辨識圖片時，`attachToTarget()` 會把 anchor 掛回 scene。
 
-### 步驟 9：點擊模型
+### 步驟 9：點擊、旋轉與縮放模型
 
-`createCharacterInteraction.client.js` 使用 Three.js `Raycaster`：
+`createModelGestureControls.client.js` 統一處理三種手勢：
+
+```text
+短按模型 → Raycaster 判斷是否擊中 GLB → handleCharacterClick()
+單指拖曳 → 改 gesturePivot.rotation.x / rotation.y
+雙指張合 → 改 gesturePivot.scale.x / y / z
+```
+
+只有模型切到 `camera-lock` 後才開放旋轉和縮放。模型還貼在實體圖片上時，手勢不會破壞 target 的對齊，但短按仍能播放動畫。
+
+縮放與旋轉的範圍集中在 `config.js`：
+
+```js
+gestures: {
+  initialScale: 1,
+  initialRotationDegrees: {x: 0, y: 0, z: 0},
+  minScale: 0.55,
+  maxScale: 1.8,
+  rotationSpeedDegrees: 0.35,
+  minPitchDegrees: -35,
+  maxPitchDegrees: 55,
+}
+```
+
+| 需求 | 修改值 |
+| --- | --- |
+| 允許縮得更小 | 降低 `minScale` |
+| 允許放得更大 | 提高 `maxScale` |
+| 拖曳時轉快一點 | 提高 `rotationSpeedDegrees` |
+| 初次切換就先左右轉 30 度 | `initialRotationDegrees.y: 30` |
+| 限制上下翻轉角度 | 調整 `minPitchDegrees` / `maxPitchDegrees` |
+
+程式刻意把兩種 transform 分開：
+
+```text
+placementPivot = 你在 config 設定的固定位置與角度
+gesturePivot   = 使用者這一次手勢產生的旋轉與縮放
+```
+
+如果兩者寫在同一個 Group，圖片每次更新位置時就可能蓋掉使用者的旋轉；拆開後責任比較清楚，也比較適合複製到新專案。
+
+點擊仍使用 Three.js `Raycaster`：
 
 ```text
 手機點擊
@@ -429,6 +493,10 @@ attachToCamera()
 | 調整模型大小 | `model.maxSize` |
 | 調整模型在圖片上的角度 | `model.targetTransform` |
 | 調整失焦後的位置 | `model.cameraTransform` |
+| 調整失焦後的俯視角度 | `model.cameraTransform.rotationDegrees.x` |
+| 調整手勢縮放上下限 | `model.gestures.minScale` / `maxScale` |
+| 調整拖曳旋轉速度 | `model.gestures.rotationSpeedDegrees` |
+| 改成一進展示就有預設旋轉 | `model.gestures.initialRotationDegrees` |
 | 失焦後不要顯示 | `tracking.lostBehavior = 'hide'` |
 | 點擊播放不同動畫 | `animation.onClick` |
 | 點擊打開資訊卡 | page 的 `handleCharacterClick()` |
