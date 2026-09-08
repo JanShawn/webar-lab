@@ -46,7 +46,7 @@ Vue 顯示「辨識成功」或錯誤提示
 
 ## 第二課：專案目錄怎麼分類
 
-先只看下面這些。學 Image AR 時，可以暫時忽略 `spatial-hunt`、`stores/` 和 `services/ar/`，它們屬於較早完成的空間尋寶 POC。
+先只看下面這些。學 Image AR 時，可以暫時忽略 `experiences/spatial-hunt/` 與 `ar/providers/8thwall/worldAdapter.client.js`，它們屬於較早完成的空間尋寶 POC。
 
 ```text
 pages/
@@ -460,7 +460,7 @@ node_modules/
 .env
 experiences/spatial-hunt/
 stores/
-services/ar/8thWallWorldAdapter.client.js
+ar/providers/8thwall/worldAdapter.client.js
 ```
 
 最後三項屬於空間尋寶，不是 Image AR 必要核心。

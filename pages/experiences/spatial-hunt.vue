@@ -16,7 +16,7 @@ import {
 import {storeToRefs} from 'pinia'
 import * as THREE from 'three'
 import {spatialHuntConfig} from '~/experiences/spatial-hunt/config'
-import {create8thWallWorldAdapter} from '~/services/ar/8thWallWorldAdapter.client'
+import {create8thWallWorldAdapter} from '~/ar/providers/8thwall/worldAdapter.client'
 import {createSpatialHuntPipeline} from '~/experiences/spatial-hunt/createScene.client'
 import {GAME_PHASES, useSpatialHuntStore} from '~/experiences/spatial-hunt/store'
 import {createSpawnLayout} from '~/experiences/spatial-hunt/spawnLayout'
