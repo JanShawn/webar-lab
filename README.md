@@ -32,6 +32,14 @@ npm test
 npm run build
 ```
 
+## 產生新的 Image Target
+
+```bash
+npm run target:create
+```
+
+CLI 每一題要填什麼，請看 [START-HERE：工具產生的 Image Target 檔案](docs/START-HERE.md#工具產生的-image-target-檔案)。
+
 GitHub Pages 由 `.github/workflows/deploy-pages.yml` 發佈。Image POC 部署後的入口：
 
 ```text

@@ -8,18 +8,20 @@
     "build": "nuxt build",
     "generate": "nuxt generate",
     "preview": "nuxt preview",
+    "target:create": "image-target-cli",
     "test": "vitest run",
     "test:watch": "vitest"
   },
   "dependencies": {
-    "@pinia/nuxt": "1.0.2",
     "@lucide/vue": "1.40.0",
+    "@pinia/nuxt": "1.0.2",
     "nuxt": "4.5.2",
     "pinia": "4.0.3",
     "qrcode": "1.5.4",
     "three": "0.185.1"
   },
   "devDependencies": {
+    "@8thwall/image-target-cli": "1.0.0",
     "@gltf-transform/cli": "4.5.0",
     "@nuxtjs/tailwindcss": "6.14.0",
     "vitest": "5.0.0"

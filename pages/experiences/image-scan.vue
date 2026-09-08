@@ -48,6 +48,7 @@ const imageTracking = useImageTracking({targetName: imageScanConfig.target.name}
 // 否則 template 會拿 Ref 物件和 'idle' 比較，導致所有狀態畫面都不顯示。
 const sessionStatus = session.status
 const imageTrackingStatus = imageTracking.status
+const canvasReady = computed(() => Boolean(canvas.value))
 
 let characterAsset = null
 let character = null
@@ -55,6 +56,15 @@ let animationController = null
 let interactionController = null
 let unsubscribeFrame = null
 let foundOnce = false
+
+/**
+ * 接收 ArCanvas 內真正的 HTMLCanvasElement。
+ * 不要直接在 template 寫 canvas = $event；明確的函式較容易除錯，
+ * 也能在 ?debug=1 看出 canvas 是否準備完成。
+ */
+const handleCanvasReady = (canvasElement) => {
+  canvas.value = canvasElement
+}
 
 const withBaseURL = (path) => {
   // 核心：GitHub Pages 部署在 /webar-lab/，所有 public 素材都必須補上 baseURL。
@@ -114,6 +124,13 @@ const stopExperience = async () => {
 }
 
 const startExperience = async () => {
+  // 使用者點按後才可以請求相機。若 canvas 尚未準備好，顯示錯誤而不是留下不能按的按鈕。
+  if (!canvas.value) {
+    modelError.value = 'AR 畫布尚未準備完成，請重新整理頁面後再試一次。'
+    modelStatus.value = 'error'
+    return
+  }
+
   // 核心啟動順序：AR session → Three.js scene → GLB → anchor/動畫/點擊。
   modelError.value = ''
   modelStatus.value = 'idle'
@@ -193,8 +210,10 @@ onBeforeUnmount(() => {
 
 <template>
   <main class="image-ar-shell">
-    <ArCanvas @ready="canvas = $event" />
+    <!-- 第 1 層：相機與 Three.js 共用的 canvas；ready 後按鈕才具備啟動條件。 -->
+    <ArCanvas @ready="handleCanvasReady" />
 
+    <!-- 第 2 層：Vue UI，不會被 XR8 直接操作。 -->
     <div class="ui-layer">
       <header class="top-bar">
         <button class="icon-button" type="button" aria-label="返回首頁" @click.stop="leaveExperience">
@@ -209,13 +228,14 @@ onBeforeUnmount(() => {
         </span>
       </header>
 
-      <section v-if="sessionStatus === 'idle'" class="center-card intro-card">
+      <!-- idle：尚未開相機。相機權限一定要等使用者點擊後才請求。 -->
+      <section v-if="sessionStatus === 'idle' && modelStatus !== 'error'" class="center-card intro-card">
         <div class="intro-icon"><ImageIcon :size="34" /></div>
         <p class="eyebrow">8th Wall Image Target</p>
         <h1>掃描明信片，<br>喚醒小山靈場景。</h1>
         <p>請用手機開啟本頁，再對準印出的明信片或另一個螢幕。辨識成功後模型會出現在圖片上。</p>
         <img :src="withBaseURL(imageScanConfig.target.previewPath)" alt="要掃描的小山靈明信片" class="target-preview">
-        <button class="primary-button" type="button" :disabled="!canvas" @click.stop="startExperience">
+        <button class="primary-button" type="button" @click.stop="startExperience">
           <Camera :size="19" />
           開啟相機
         </button>
@@ -269,6 +289,7 @@ onBeforeUnmount(() => {
       <aside v-if="debugEnabled" class="debug-panel">
         <b>DEBUG</b>
         <span>session: {{ sessionStatus }}</span>
+        <span>canvas: {{ canvasReady ? 'ready' : 'missing' }}</span>
         <span>image: {{ imageTrackingStatus }}</span>
         <span>display: {{ displayMode }}</span>
         <span>model: {{ modelStatus }}</span>
@@ -294,9 +315,17 @@ button, a { pointer-events: auto; }
 .center-card p { color: #b8c9bf; line-height: 1.6; }
 .intro-icon { display: grid; width: 4rem; height: 4rem; place-items: center; border-radius: 1rem; color: #79f59f; background: #79f59f18; }
 .eyebrow { margin: 1rem 0 0; color: #79f59f !important; font-size: .68rem; font-weight: 900; letter-spacing: .15em; text-transform: uppercase; }
-.target-preview { width: 100%; max-height: 12rem; margin: .7rem 0 1rem; border: 1px solid #ffffff1f; border-radius: .8rem; object-fit: cover; }
+.target-preview {
+  display: block;
+  width: 100%;
+  max-height: min(30dvh, 15rem);
+  margin: .7rem 0 1rem;
+  border: 1px solid #ffffff1f;
+  border-radius: .8rem;
+  background: #f8e7ab;
+  object-fit: contain;
+}
 .primary-button { display: flex; width: 100%; min-height: 48px; align-items: center; justify-content: center; gap: .55rem; border-radius: .8rem; color: #031109; background: #79f59f; font-weight: 850; }
-.primary-button:disabled { cursor: wait; opacity: .5; }
 .compact-card { display: grid; justify-items: center; text-align: center; }
 .compact-card h2 { margin: .4rem 0; }
 .spin { color: #79f59f; animation: spin 1s linear infinite; }

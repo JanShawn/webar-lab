@@ -82,7 +82,7 @@ ar/
 └─ interaction/createCharacterInteraction.client.js
 
 components/ar/
-└─ Canvas.client.vue
+└─ Canvas.vue
 
 public/experiences/
 ├─ image-scan/
@@ -119,15 +119,38 @@ public/experiences/
 | `ar/core/` | 統一 provider 介面、pose 與錯誤 | 通常不改 |
 | `ar/providers/8thwall/` | 唯一直接使用 XR8 的位置 | 換引擎才改 |
 | `3d/` | GLB、動畫、燈光、raycasting、dispose | 新增 3D 能力才改 |
-| `components/ar/Canvas.client.vue` | 提供 AR 相機與 Three.js 共用 canvas | 通常不改 |
+| `components/ar/Canvas.vue` | 提供 AR 相機與 Three.js 共用 canvas | 通常不改 |
 
 ### 工具產生的 Image Target 檔案
 
-來源是你提供的明信片圖片，使用 8th Wall 官方 CLI 產生：
+來源是你提供的明信片圖片，使用專案已安裝的 8th Wall 官方 CLI 產生。
+
+先在專案根目錄開啟 Terminal：
 
 ```bash
-npx @8thwall/image-target-cli@latest
+npm run target:create
 ```
+
+接著 CLI 會逐題詢問。第一次請照下面回答：
+
+| CLI 問題 | 建議輸入 |
+| --- | --- |
+| `Enter the path to the image file` | 原始圖片的完整路徑，例如 `C:\Users\你的名字\Downloads\target.png` |
+| `Select the image type` | 一般海報、卡片或包裝正面選 `flat` |
+| `Use default crop?` | 第一次選 `Yes`；它會自動裁成適合辨識的 4:3 區域 |
+| `Enter the output folder` | 本專案的 `public\experiences\image-scan\targets` 完整路徑 |
+| `Enter a name for the image target` | 只用英文小寫、數字與連字號，例如 `postcard-area1` |
+
+完成時 Terminal 會印出 `Image target data saved to: ...`。接著打開
+`experiences/image-scan/config.js`，確認 `name`、`metadataPath`、
+`imagePath`、`previewPath` 都使用剛才輸入的名稱。
+
+不要直接拿原始彩圖當作 `imagePath`。8th Wall 實際辨識使用 CLI 產生的
+`*_luminance.png`；原始彩圖只用於畫面上的掃描提示。
+
+> 安全提醒：目前官方 CLI 1.0.0 的圖片處理依賴 `sharp` 有 npm high severity
+> advisory，官方尚未提供可升級版本。它只放在 `devDependencies`，不會打進網站；
+> `npm audit --omit=dev` 為 0。請只拿自己或可信來源的圖片在本機執行 CLI。
 
 `public/experiences/image-scan/targets/` 內的檔案：
 
@@ -196,7 +219,7 @@ npx gltf-transform optimize input.glb output.glb +  --compress quantize +  --fla
 
 ### 步驟 2：Canvas 準備完成
 
-`components/ar/Canvas.client.vue` 在 Vue `onMounted()` 後，把真正的 canvas element 傳給頁面。
+`components/ar/Canvas.vue` 在 Vue `onMounted()` 後，把真正的 canvas element 傳給頁面。
 
 ```text
 Canvas mounted
@@ -425,7 +448,7 @@ ar/
 composables/useARSession.js
 composables/useImageTracking.js
 3d/
-components/ar/Canvas.client.vue
+components/ar/Canvas.vue
 experiences/image-scan/
 pages/experiences/image-scan.vue
 public/experiences/image-scan/
