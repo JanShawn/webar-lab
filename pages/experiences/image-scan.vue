@@ -43,6 +43,12 @@ const debugEnabled = computed(() => route.query.debug === '1')
 const session = useARSession()
 const imageTracking = useImageTracking({targetName: imageScanConfig.target.name})
 
+// Vue 只會自動解包 template 中「最外層」的 ref。
+// session.status 是包在普通 object 裡的 ref，所以另外取成最外層變數，
+// 否則 template 會拿 Ref 物件和 'idle' 比較，導致所有狀態畫面都不顯示。
+const sessionStatus = session.status
+const imageTrackingStatus = imageTracking.status
+
 let characterAsset = null
 let character = null
 let animationController = null
@@ -198,12 +204,12 @@ onBeforeUnmount(() => {
           <b>IMAGE AR / POC 02</b>
           <small>{{ imageScanConfig.title }}</small>
         </div>
-        <span class="tracking-chip" :class="`is-${imageTracking.status}`">
-          {{ imageTracking.status === 'found' || imageTracking.status === 'tracking' ? 'TARGET' : 'SCANNING' }}
+        <span class="tracking-chip" :class="`is-${imageTrackingStatus}`">
+          {{ imageTrackingStatus === 'found' || imageTrackingStatus === 'tracking' ? 'TARGET' : 'SCANNING' }}
         </span>
       </header>
 
-      <section v-if="session.status === 'idle'" class="center-card intro-card">
+      <section v-if="sessionStatus === 'idle'" class="center-card intro-card">
         <div class="intro-icon"><ImageIcon :size="34" /></div>
         <p class="eyebrow">8th Wall Image Target</p>
         <h1>掃描明信片，<br>喚醒小山靈場景。</h1>
@@ -216,17 +222,17 @@ onBeforeUnmount(() => {
       </section>
 
       <section
-        v-else-if="['loading', 'requesting-permission', 'initializing'].includes(session.status)"
+        v-else-if="['loading', 'requesting-permission', 'initializing'].includes(sessionStatus)"
         class="center-card compact-card"
         aria-live="polite"
       >
         <LoaderCircle class="spin" :size="36" />
         <p class="eyebrow">準備 WebAR</p>
-        <h2>{{ session.status === 'requesting-permission' ? '請允許相機權限' : '正在載入辨識引擎' }}</h2>
+        <h2>{{ sessionStatus === 'requesting-permission' ? '請允許相機權限' : '正在載入辨識引擎' }}</h2>
         <p>第一次開啟需要下載 8th Wall Engine 與圖片特徵資料。</p>
       </section>
 
-      <section v-else-if="['error', 'unsupported'].includes(session.status) || modelStatus === 'error'" class="center-card compact-card">
+      <section v-else-if="['error', 'unsupported'].includes(sessionStatus) || modelStatus === 'error'" class="center-card compact-card">
         <ShieldAlert :size="38" class="text-amber-300" />
         <p class="eyebrow">無法啟動</p>
         <h2>Image AR 暫時無法使用</h2>
@@ -262,8 +268,8 @@ onBeforeUnmount(() => {
 
       <aside v-if="debugEnabled" class="debug-panel">
         <b>DEBUG</b>
-        <span>session: {{ session.status }}</span>
-        <span>image: {{ imageTracking.status }}</span>
+        <span>session: {{ sessionStatus }}</span>
+        <span>image: {{ imageTrackingStatus }}</span>
         <span>display: {{ displayMode }}</span>
         <span>model: {{ modelStatus }}</span>
         <span>animations: {{ availableAnimations.length }}</span>

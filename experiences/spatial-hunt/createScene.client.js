@@ -88,7 +88,7 @@ const normalizeModel = (model, targetSize = spatialHuntConfig.rover.modelSizeMet
  * Owns only Three.js scene content and hit testing. Vue and Pinia own the game flow.
  */
 export const createSpatialHuntPipeline = ({
-  assetUrl = '/models/toy-car.glb',
+  assetUrl = '/experiences/spatial-hunt/models/toy-car.glb',
   onCollect = () => {},
   onSceneReady = () => {},
   onModelLoad = () => {},

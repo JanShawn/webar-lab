@@ -6,7 +6,7 @@
  */
 export const spatialHuntConfig = Object.freeze({
   /** public/ 底下的模型路徑，不要以 / 開頭，才能支援 GitHub Pages 子路徑。 */
-  modelPath: 'models/toy-car.glb',
+  modelPath: 'experiences/spatial-hunt/models/toy-car.glb',
 
   /** 一局需要收集的晶體數量。 */
   targetCount: 5,

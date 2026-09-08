@@ -84,9 +84,12 @@ ar/
 components/ar/
 └─ Canvas.client.vue
 
-public/ar/image-scan/
-├─ targets/
-└─ models/
+public/experiences/
+├─ image-scan/
+│  ├─ targets/
+│  └─ models/
+└─ spatial-hunt/
+   └─ models/
 ```
 
 ### 為什麼不把所有檔案放在同一個資料夾
@@ -96,7 +99,7 @@ public/ar/image-scan/
 - `composables/` 放 Vue 可以重複使用的狀態與 lifecycle。
 - `ar/` 放 tracking engine，並隔離 8th Wall 的 `XR8` API。
 - `3d/` 放不依賴 8th Wall 的模型、動畫與點擊能力。
-- `public/` 放瀏覽器需要用 URL 下載的圖片與 GLB。
+- `public/experiences/<poc>/` 放該 POC 會用 URL 下載的圖片與 GLB。程式和素材使用相同 slug，較不會拿錯。
 
 這樣未來改用 MindAR 時，主要替換 `ar/providers/`；模型與 Vue UI 不需要全部重寫。
 
@@ -126,7 +129,7 @@ public/ar/image-scan/
 npx @8thwall/image-target-cli@latest
 ```
 
-`public/ar/image-scan/targets/` 內的檔案：
+`public/experiences/image-scan/targets/` 內的檔案：
 
 | 檔案 | 用途 |
 | --- | --- |
@@ -149,7 +152,7 @@ JSON 和 luminance 圖不是手寫程式，不建議手動修改。換目標圖�
 瀏覽器實際載入：
 
 ```text
-public/ar/image-scan/models/area1-spirit.glb：約 1.92 MB
+public/experiences/image-scan/models/area1-spirit.glb：約 1.92 MB
 ```
 
 它是透過 glTF Transform 產生的最佳化副本：
@@ -393,7 +396,7 @@ attachToCamera()
 | 想做的事 | 修改位置 |
 | --- | --- |
 | 換辨識圖片 | 重新跑 Image Target CLI，替換 targets，更新 config |
-| 換 GLB | 替換 `public/ar/image-scan/models/`，修改 `model.path` |
+| 換 GLB | 替換 `public/experiences/image-scan/models/`，修改 `model.path` |
 | 調整模型大小 | `model.maxSize` |
 | 調整模型在圖片上的角度 | `model.targetTransform` |
 | 調整失焦後的位置 | `model.cameraTransform` |
@@ -407,7 +410,7 @@ attachToCamera()
 
 ```text
 1. experiences/image-scan/config.js
-2. public/ar/image-scan/
+2. public/experiences/image-scan/
 3. pages/experiences/image-scan.vue 的 handleCharacterClick()
 ```
 
@@ -425,8 +428,7 @@ composables/useImageTracking.js
 components/ar/Canvas.client.vue
 experiences/image-scan/
 pages/experiences/image-scan.vue
-public/ar/image-scan/
-public/legal/
+public/experiences/image-scan/
 ```
 
 ### 必須合併設定
@@ -467,7 +469,7 @@ services/ar/8thWallWorldAdapter.client.js
 
 1. 複製 `experiences/image-scan/` 並改資料夾名稱。
 2. 複製 `pages/experiences/image-scan.vue` 並改檔名。
-3. 建立新的 `public/ar/<slug>/` 素材。
+3. 建立新的 `public/experiences/<slug>/` 素材。
 4. 修改新 POC 的 config。
 5. 在 `data/experiences.js` 新增首頁卡片。
 6. 共用 `ar/`、`3d/`、`composables/`，不要每個 POC 再複製一份。
@@ -498,7 +500,16 @@ http://127.0.0.1:3000/experiences/image-scan/
 https://janshawn.github.io/webar-lab/experiences/image-scan/
 ```
 
-然後掃描：
+畫面不會一進頁面就自己跳出相機權限，正確順序是：
+
+1. 先看到 POC 說明與「開啟相機」按鈕。
+2. 使用者親自點擊「開啟相機」。
+3. Safari 或 Chrome 才顯示相機權限視窗。
+4. 允許後，再拿手機掃描辨識圖。
+
+瀏覽器刻意要求相機由使用者操作觸發，這是安全限制，不應在頁面載入時自動要求權限。
+
+辨識圖可以使用：
 
 - 印出的明信片，或
 - 另一台電腦／平板顯示的明信片。
@@ -521,6 +532,20 @@ npm run build
 ```
 
 GitHub Pages 只有在程式 commit、push 且 GitHub Actions 成功後才會更新。本機有檔案，不代表線上網址已存在。
+
+### GitHub Pages 與 Jekyll
+
+這份專案不使用 Jekyll。唯一的部署流程是：
+
+```text
+.github/workflows/deploy-pages.yml
+  → npm ci
+  → npm run generate
+  → 上傳 .output/public
+  → deploy-pages
+```
+
+因此 repository 不需要 `_config.yml`、`Gemfile`、`_site/` 或來源檔中的 `.nojekyll`。`.nuxt/`、`.output/`、`.vercel/` 都是可重新產生的建置結果，也不應複製到新專案。
 
 ---
 

@@ -10,13 +10,13 @@ export const imageScanConfig = {
   target: {
     // 客製入口 2：換辨識圖時，要一起更換 JSON、luminance 圖與預覽圖。
     name: 'postcard-area1',
-    metadataPath: '/ar/image-scan/targets/postcard-area1.json',
-    imagePath: '/ar/image-scan/targets/postcard-area1_luminance.png',
-    previewPath: '/ar/image-scan/targets/postcard-area1_original.png',
+    metadataPath: '/experiences/image-scan/targets/postcard-area1.json',
+    imagePath: '/experiences/image-scan/targets/postcard-area1_luminance.png',
+    previewPath: '/experiences/image-scan/targets/postcard-area1_original.png',
   },
   model: {
     // 客製入口 3：換案件時通常只需要換 GLB 路徑，再微調 maxSize。
-    path: '/ar/image-scan/models/area1-spirit.glb',
+    path: '/experiences/image-scan/models/area1-spirit.glb',
     maxSize: 0.72,
     targetTransform: {
       // 客製入口 4：模型相對於實體圖片的位置與角度。

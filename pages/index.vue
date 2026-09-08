@@ -108,9 +108,15 @@ const statusLabels = {ready: '可測試', next: '下一個 POC', planned: '規�
 
       <footer class="mt-10 flex flex-col gap-3 border-t border-line pt-6 text-sm text-muted sm:flex-row sm:items-center sm:justify-between">
         <p>Prototype 01 · Internal WebAR Lab</p>
-        <NuxtLink to="/legal" class="underline decoration-line underline-offset-4 transition-colors hover:text-white">
-          8th Wall binary 使用前需遵循其授權與標示要求。
-        </NuxtLink>
+        <p>
+          XR Engine © 2026 Niantic Spatial, Inc. ·
+          <a
+            href="https://github.com/8thwall/engine/blob/main/LICENSE"
+            target="_blank"
+            rel="noreferrer"
+            class="underline decoration-line underline-offset-4 transition-colors hover:text-white"
+          >License</a>
+        </p>
       </footer>
     </main>
   </div>

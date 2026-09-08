@@ -313,7 +313,6 @@ onBeforeUnmount(() => {
           <Camera :size="19" aria-hidden="true" />
           開啟相機並開始
         </button>
-        <NuxtLink class="text-link" to="/legal">使用條款與素材授權</NuxtLink>
       </section>
 
       <section v-else-if="phase === GAME_PHASES.LOADING" class="center-panel compact-panel" aria-live="polite">

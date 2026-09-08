@@ -38,4 +38,4 @@ GitHub Pages 由 `.github/workflows/deploy-pages.yml` 發佈。Image POC 部署�
 https://janshawn.github.io/webar-lab/experiences/image-scan/
 ```
 
-8th Wall 的開源框架與 SLAM binary 授權不同；若未來改成白牌或收費平台，需重新審查 XR Engine License。相關聲明放在 `public/legal/`。
+8th Wall 的開源框架與 SLAM binary 授權不同；若未來改成白牌或收費平台，需重新審查 XR Engine License。第三方來源與授權紀錄放在 `docs/THIRD-PARTY-NOTICES.md`。
